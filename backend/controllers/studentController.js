@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import studentModel from "../models/studentModel.js";
+import transporter from "../config/nodemailer.js";
 
 // Controller function to register a student
 export const registerStudent = async (req, res) => {
@@ -98,6 +99,17 @@ export const registerStudent = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    //sending welcome email
+    const mailoptions = {
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "welcome to HMS",
+      text: `welcome to HMS website. Your account has been created with email id: ${email}`,
+    };
+
+    await transporter.sendMail(mailoptions);
+
     return res.status(201).json({
       message: "Student registered successfully",
       student: newStudent,
