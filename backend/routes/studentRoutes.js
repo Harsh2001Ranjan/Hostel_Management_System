@@ -11,6 +11,10 @@ import {
   getStudentData,
 } from "../controllers/studentController.js";
 import userAuth from "../middleware/authMiddleware.js";
+import {
+  approveComplaint,
+  postComplaint,
+} from "../controllers/complaintController.js";
 
 const router = express.Router();
 
@@ -34,4 +38,9 @@ router.post("/send-reset-otp", sendResetOTP);
 router.post("/reset-password", resetPassword);
 // router for getting student data
 router.get("/get-student-data", userAuth, getStudentData);
+//router for posing complaint
+router.post("/complaints", userAuth, postComplaint);
+//router for student approval of resolved complaint
+router.post("/complaint/approve", userAuth, approveComplaint);
+
 export default router;
