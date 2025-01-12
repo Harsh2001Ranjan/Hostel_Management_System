@@ -203,3 +203,151 @@ export const logoutStudent = (req, res) => {
     });
   }
 };
+// Send Varification OTP to the student's Email
+export const sendVerifyOtpToStudent = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const student = await studentModel.findById(userId);
+    if (student.isAccountVerified) {
+      return res.json({
+        success: false,
+        message: "Account already verified",
+      });
+    }
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    student.verifyOtp = otp;
+    student.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours from now
+    await student.save();
+    const mailoptions = {
+      from: process.env.SENDER_EMAIL,
+      to: student.email,
+      subject: "Account Verification OTP",
+      text: `Your OTP is ${otp} to verify your account`,
+    };
+    await transporter.sendMail(mailoptions);
+    res.json({
+      success: true,
+      message: "Verification OTP sent to your email.",
+    });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+// Verification of OTP controller
+export const verifyStudentAccount = async (req, res) => {
+  const { userId, otp } = req.body;
+  if (!userId || !otp) {
+    return res.json({ success: false, message: "Missing Detials" });
+  }
+  try {
+    const student = await studentModel.findById(userId);
+    if (!student) {
+      return res.json({ success: false, message: "Student not found" });
+    }
+    if (student.verifyOtp === "" || student.verifyOtp !== otp) {
+      return res.json({ success: false, message: "Invalid OTP" });
+    }
+    if (student.verifyOtpExpireAt < Date.now()) {
+      return res.json({ success: false, message: "OTP Expired" });
+    }
+    student.isAccountVerified = true;
+    student.verifyOtp = "";
+    student.verifyOtpExpireAt = 0;
+    await student.save();
+    res.json({ success: true, message: "Account verified successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+// // check for authentication if already logged in or not
+export const isAuthenticated = async (req, res) => {
+  try {
+    return res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+// Send password reset OTP
+export const sendResetOTP = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.json({ success: false, message: "Email is required" });
+  }
+  try {
+    const student = await studentModel.findOne({ email });
+    if (!student) {
+      return res.json({ success: false, message: "Student not found" });
+    }
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    student.resetOtp = otp;
+    student.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+    await student.save();
+    const mailoptions = {
+      from: process.env.SENDER_EMAIL,
+      to: student.email,
+      subject: "Password reset OTP",
+      text: `Your OTP is ${otp} to reset your password`,
+    };
+    await transporter.sendMail(mailoptions);
+    res.json({
+      success: true,
+      message: "OTP sent to your email.",
+    });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+//Reset user password
+export const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.json({ success: false, message: "All fields are required" });
+  }
+  try {
+    const student = await studentModel.findOne({ email });
+    if (!student) {
+      return res.json({ success: false, message: "Student not found" });
+    }
+    if (student.resetOtp === "" || student.resetOtp !== otp) {
+      return res.json({ success: false, message: "Invalid OTP" });
+    }
+    if (student.resetOtpExpireAt < Date.now()) {
+      return res.json({ success: false, message: "OTP has expired" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    student.password = hashedPassword;
+    student.resetOtp = "";
+    student.resetOtpExpireAt = 0;
+    await student.save();
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+// creating getStudentData function to get the data of the student
+export const getStudentData = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const student = await studentModel.findById(userId);
+    if (!student) {
+      return res.json({ success: false, message: "Student not found" });
+    }
+    res.json({
+      success: true,
+      studentData: {
+        name: student.name,
+        email: student.email,
+        registrationNumber: student.registrationNumber,
+        hostel: student.hostelName,
+        room: student.roomNumber,
+        year: student.currentYear,
+        phoneNumber: student.phoneNumber,
+        parentsPhoneNumber: student.parentsPhoneNumber,
+        address: student.address,
+        isAccountVerified: student.isAccountVerified,
+      },
+    });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
