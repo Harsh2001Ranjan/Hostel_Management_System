@@ -42,6 +42,11 @@ const wardenSchema = new mongoose.Schema({
     default: "Warden",
     enum: ["Warden", "ChiefWarden"], // Restricts values to either "Warden" or "ChiefWarden"
   },
+  verifyOtp: { type: String, default: "" },
+  verifyOtpExpireAt: { type: Number, default: 0 },
+  isAccountVerified: { type: Boolean, default: false },
+  resetOtp: { type: String, default: "" },
+  resetOtpExpireAt: { type: Number, default: 0 },
 });
 
 const wardenModel =

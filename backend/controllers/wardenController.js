@@ -1,6 +1,7 @@
-//import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import wardenModel from "../models/wardenModel.js";
+import transporter from "../config/nodemailer.js";
 
 // Controller function to log in a warden
 export const loginWarden = async (req, res) => {
@@ -80,5 +81,62 @@ export const logoutWarden = (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+// Send password reset OTP
+export const sendResetOTP = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.json({ success: false, message: "Email is required" });
+  }
+  try {
+    const warden = await wardenModel.findOne({ email });
+    if (!warden) {
+      return res.json({ success: false, message: "warden not found" });
+    }
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    warden.resetOtp = otp;
+    warden.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+    await warden.save();
+    const mailoptions = {
+      from: process.env.SENDER_EMAIL,
+      to: warden.email,
+      subject: "Password reset OTP",
+      text: `Your OTP is ${otp} to reset your password`,
+    };
+    await transporter.sendMail(mailoptions);
+    res.json({
+      success: true,
+      message: "OTP sent to your email.",
+    });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+//Reset user password
+export const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.json({ success: false, message: "All fields are required" });
+  }
+  try {
+    const warden = await wardenModel.findOne({ email });
+    if (!warden) {
+      return res.json({ success: false, message: "warden not found" });
+    }
+    if (warden.resetOtp === "" || warden.resetOtp !== otp) {
+      return res.json({ success: false, message: "Invalid OTP" });
+    }
+    if (warden.resetOtpExpireAt < Date.now()) {
+      return res.json({ success: false, message: "OTP has expired" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    warden.password = hashedPassword;
+    warden.resetOtp = "";
+    warden.resetOtpExpireAt = 0;
+    await warden.save();
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
   }
 };
