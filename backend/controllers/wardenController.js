@@ -8,7 +8,6 @@ export const loginWarden = async (req, res) => {
   try {
     // Destructure the request body
     const { email, password } = req.body;
-
     // Validate input fields
     if (!email) return res.status(400).json({ message: "Email is required" });
     if (!password)
@@ -21,8 +20,8 @@ export const loginWarden = async (req, res) => {
     }
 
     // Verify the password
-    // const isPasswordValid = await bcrypt.compare(password, warden.password);
-    const isPasswordValid = password === warden.password;
+    const isPasswordValid = await bcrypt.compare(password, warden.password);
+    // const isPasswordValid = password === warden.password;
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -138,5 +137,28 @@ export const resetPassword = async (req, res) => {
     res.json({ success: true, message: "Password reset successfully" });
   } catch (error) {
     return res.json({ success: false, message: error.message });
+  }
+};
+// creating getWardenData function to get the data of the warden
+export const getWardenData = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const warden = await wardenModel.findById(userId);
+    if (!warden) {
+      return res.json({ success: false, message: "warden not found" });
+    }
+    res.json({
+      success: true,
+      wardenData: {
+        name: warden.name,
+        email: warden.email,
+        registrationNumber: warden.registrationNumber,
+        hostel: warden.hostelName,
+        phoneNumber: warden.phoneNumber,
+        isAccountVerified: warden.isAccountVerified,
+      },
+    });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
   }
 };
