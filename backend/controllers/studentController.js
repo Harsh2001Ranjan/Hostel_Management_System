@@ -18,6 +18,7 @@ export const registerStudent = async (req, res) => {
       password,
       repeatPassword,
       email,
+      parentEmail,
       currentYear,
     } = req.body;
     if (!name) return res.status(400).json({ message: "Name is required" });
@@ -44,6 +45,8 @@ export const registerStudent = async (req, res) => {
     if (!repeatPassword)
       return res.status(400).json({ message: "Repeat password is required" });
     if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!parentEmail)
+      return res.status(400).json({ message: "Parent's Email is required" });
     if (!currentYear)
       return res.status(400).json({ message: "Current year is required" });
 
@@ -79,6 +82,7 @@ export const registerStudent = async (req, res) => {
       address,
       password: hashedPassword,
       email,
+      parentEmail,
       currentYear,
     });
 

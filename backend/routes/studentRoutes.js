@@ -15,6 +15,7 @@ import {
   approveComplaint,
   postComplaint,
 } from "../controllers/complaintController.js";
+import { createLeaveApplication } from "../controllers/leaveApplicationController.js";
 
 const router = express.Router();
 
@@ -42,5 +43,7 @@ router.get("/get-student-data", userAuth, getStudentData);
 router.post("/complaints", userAuth, postComplaint);
 //router for student approval of resolved complaint
 router.post("/complaint/approve", userAuth, approveComplaint);
+//router for leave application
+router.post("/create-leave-application", userAuth, createLeaveApplication);
 
 export default router;

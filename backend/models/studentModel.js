@@ -56,7 +56,12 @@ const studentSchema = new mongoose.Schema({
     match: /^[a-zA-Z]+\.[0-9]{8}@mnnit\.ac\.in$/, // Regex for the specific email format
     trim: true,
   },
-
+  parentEmail: {
+    type: String,
+    required: true, // Set to true if the parent email is mandatory, false otherwise
+    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // General regex for validating email addresses
+    trim: true,
+  },
   currentYear: {
     type: Number,
     required: true,
