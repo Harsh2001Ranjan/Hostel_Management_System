@@ -13,6 +13,11 @@ import {
   markReturnDetails,
   updateLeaveStatus,
 } from "../controllers/leaveApplicationController.js";
+import {
+  escalateComplaint,
+  getComplaintsForWarden,
+  updateComplaintStatus,
+} from "../controllers/complaintController.js";
 const router = express.Router();
 
 // Route for warden login
@@ -56,5 +61,21 @@ router.post(
   userAuth,
   authWarden,
   markReturnDetails
+);
+// Route to get complaints assigned to a specific warden
+router.get("/complaints", userAuth, authWarden, getComplaintsForWarden);
+// Route to update the status of a complaint
+router.patch(
+  "/complaints/:complaintId/status",
+  userAuth,
+  authWarden,
+  updateComplaintStatus
+);
+// Route to escalate a complaint
+router.patch(
+  "/complaints/:complaintId/escalate",
+  userAuth,
+  authWarden,
+  escalateComplaint
 );
 export default router;
