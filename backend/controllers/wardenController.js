@@ -162,3 +162,74 @@ export const getWardenData = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+// Controller function to add a new warden (only Chief Warden can add)
+export const addWarden = async (req, res) => {
+  try {
+    const { name, employeeId, email, phoneNumber, hostelName, password } =
+      req.body;
+
+    // Validate input fields
+    if (!name || !employeeId || !email || !phoneNumber || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // // Check if the logged-in user is a ChiefWarden
+    // if (req.user.role !== "ChiefWarden") {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "You are not authorized to add a warden" });
+    // }
+
+    // Check if the warden already exists
+    const existingWarden = await wardenModel.findOne({ email });
+    if (existingWarden) {
+      return res.status(400).json({ message: "Warden already exists" });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new warden
+    const newWarden = new wardenModel({
+      name,
+      employeeId,
+      email,
+      phoneNumber,
+      hostelName,
+      password: hashedPassword,
+      //role: "Warden", // New wardens are assigned the 'Warden' role
+      isAccountVerified: false, // The account is initially not verified
+    });
+
+    // Save the new warden to the database
+    await newWarden.save();
+
+    // Send a welcome email to the new warden
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: newWarden.email,
+      subject: "Welcome to the Hostel Management System",
+      text: `Hello ${newWarden.name},\n\nWelcome to the Hostel Management System. You have been added as a Warden.\n\nYour initial password is: ${password}\n\nPlease log in with your credentials to access the system. It is highly recommended that you change your password after logging in for security purposes.\n\nBest regards,\nHostel Management Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // Send success response
+    return res.status(201).json({
+      message: "Warden added successfully and a welcome email has been sent",
+      success: true,
+      warden: {
+        id: newWarden._id,
+        name: newWarden.name,
+        email: newWarden.email,
+        employeeId: newWarden.employeeId,
+      },
+    });
+  } catch (error) {
+    // Handle server errors
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

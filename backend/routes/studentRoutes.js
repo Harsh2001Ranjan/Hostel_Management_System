@@ -13,7 +13,9 @@ import {
 import userAuth from "../middleware/authMiddleware.js";
 import {
   approveComplaint,
+  escalateComplaint,
   postComplaint,
+  viewStudentComplaints,
 } from "../controllers/complaintController.js";
 import { createLeaveApplication } from "../controllers/leaveApplicationController.js";
 
@@ -39,10 +41,14 @@ router.post("/send-reset-otp", sendResetOTP);
 router.post("/reset-password", resetPassword);
 // router for getting student data
 router.get("/get-student-data", userAuth, getStudentData);
-//router for posing complaint
-router.post("/complaints", userAuth, postComplaint);
-//router for student approval of resolved complaint
-router.post("/complaint/approve", userAuth, approveComplaint);
+//router for posting complaint
+router.post("/complaint", userAuth, postComplaint);
+// Route to view all complaints for a student
+router.get("/complaints", userAuth, viewStudentComplaints);
+// Route to approve a complaint
+router.patch("/complaints/:complaintId/approve", userAuth, approveComplaint);
+// Route to escalate a complaint
+router.patch("/complaints/:complaintId/escalate", userAuth, escalateComplaint);
 //router for leave application
 router.post("/create-leave-application", userAuth, createLeaveApplication);
 

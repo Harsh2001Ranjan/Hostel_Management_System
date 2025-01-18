@@ -1,6 +1,7 @@
 import leaveApplicationModel from "../models/leaveFormModel.js";
 import studentModel from "../models/studentModel.js";
 import transporter from "../config/nodemailer.js";
+import wardenModel from "../models/wardenModel.js";
 // Controller for request for Leave application
 export const createLeaveApplication = async (req, res) => {
   try {
@@ -60,15 +61,30 @@ export const createLeaveApplication = async (req, res) => {
 //Controller to Fetch All Leave Applications with Pending Status
 export const getPendingLeaveApplications = async (req, res) => {
   try {
+    // Fetch the logged-in warden's details using req.body.userId
+    const warden = await wardenModel.findById(req.body.userId);
     // Fetch all leave applications with status "Pending"
+    // const pendingApplications = await leaveApplicationModel
+    //   .find({ status: "Pending" })
+    //   .populate("student");
+    // Fetch all leave applications with status "Pending" for the warden's hostel
     const pendingApplications = await leaveApplicationModel
       .find({ status: "Pending" })
-      .populate("student");
+      .populate({
+        path: "student",
+        match: { hostelName: warden.hostelName }, // Filter students by hostelName
+      })
+      .exec();
+
+    // Filter out applications where the student does not match the hostelName
+    const filteredApplications = pendingApplications.filter(
+      (application) => application.student
+    );
 
     res.status(200).json({
       success: true,
-      count: pendingApplications.length,
-      data: pendingApplications,
+      count: filteredApplications.length,
+      data: filteredApplications,
     });
   } catch (error) {
     res.status(500).json({
@@ -80,15 +96,28 @@ export const getPendingLeaveApplications = async (req, res) => {
 //Controller to Fetch All Leave Applications with Approved Status
 export const getApprovedLeaveApplications = async (req, res) => {
   try {
+    // Fetch the logged-in warden's details using req.body.userId
+    const warden = await wardenModel.findById(req.body.userId);
     // Fetch all leave applications with status "Approved"
+    // const approvedApplications = await leaveApplicationModel
+    //   .find({ status: "Approved" })
+    //   .populate("student");
     const approvedApplications = await leaveApplicationModel
       .find({ status: "Approved" })
-      .populate("student");
+      .populate({
+        path: "student",
+        match: { hostelName: warden.hostelName }, // Filter students by hostelName
+      })
+      .exec();
 
+    // Filter out applications where the student does not match the hostelName
+    const filteredApplications = approvedApplications.filter(
+      (application) => application.student
+    );
     res.status(200).json({
       success: true,
-      count: approvedApplications.length,
-      data: approvedApplications,
+      count: filteredApplications.length,
+      data: filteredApplications,
     });
   } catch (error) {
     res.status(500).json({

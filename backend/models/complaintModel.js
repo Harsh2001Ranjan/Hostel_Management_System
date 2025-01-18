@@ -74,16 +74,69 @@ const complaintSchema = new mongoose.Schema({
     enum: ["sent", "processing", "resolved", "ignored"],
     default: "sent",
   },
+  wardenIgnoreReason: {
+    type: String, // Reason provided by the warden for ignoring the complaint
+    trim: true,
+  },
+  escalation: {
+    escalatedBy: {
+      type: String,
+      enum: ["student", "warden"],
+    },
+    escalateReason: {
+      type: String, // Reason for escalation provided by the student or warden
+      trim: true,
+    },
+    escalationTime: {
+      type: Date,
+    },
+  },
+  feedback: {
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: function () {
+        return this.studentApproval === true;
+      },
+    },
+    comments: {
+      type: String,
+      trim: true,
+    },
+    feedbackTime: {
+      type: Date,
+    },
+  },
+  // studentApproval: {
+  //   type: Boolean,
+  //   default: null,
+  //   required: function () {
+  //     // Only require studentApproval if complaintStatus is "resolved"
+  //     return this.complaintStatus === "resolved";
+  //   },
+  // },
   studentApproval: {
     type: Boolean,
-    default: true,
-    required: function () {
-      // Only require studentApproval if complaintStatus is "resolved"
-      return this.complaintStatus === "resolved";
-    },
+    default: null,
   },
 });
 
+// Pre-save hook to ensure studentApproval is only set when status is "resolved"
+complaintSchema.pre("save", function (next) {
+  if (
+    this.studentApproval !== null &&
+    this.complaintStatus !== "resolved" &&
+    !this.escalation.escalatedBy
+  ) {
+    return next(
+      new Error(
+        "studentApproval can only be set when complaintStatus is 'resolved'"
+      )
+    );
+  }
+  next();
+});
 const complaintModel =
   mongoose.models.complaint || mongoose.model("Complaint", complaintSchema);
 
