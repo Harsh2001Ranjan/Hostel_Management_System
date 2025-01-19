@@ -18,6 +18,11 @@ import {
   viewStudentComplaints,
 } from "../controllers/complaintController.js";
 import { createLeaveApplication } from "../controllers/leaveApplicationController.js";
+import { submitFeedback } from "../controllers/feedbackController.js";
+import {
+  getPollsForStudent,
+  reactToPoll,
+} from "../controllers/pollController.js";
 import { getMenu } from "../controllers/menuController.js";
 import { markMealNotSkipped } from "../controllers/foodWastageController.js";
 
@@ -53,6 +58,12 @@ router.patch("/complaints/:complaintId/approve", userAuth, approveComplaint);
 router.patch("/complaints/:complaintId/escalate", userAuth, escalateComplaint);
 //router for leave application
 router.post("/create-leave-application", userAuth, createLeaveApplication);
+// Feedback submission route
+router.post("/submit-feedback", userAuth, submitFeedback);
+// Route to get polls for a student that they haven't reacted to
+router.get("/polls", userAuth, getPollsForStudent);
+// Route to react to a poll (student)
+router.post("/react-poll/:pollId", userAuth, reactToPoll);
 // router for viewing today's menu
 router.get("/viewMenu", userAuth, getMenu);
 // Route for students to mark meals they won't skip

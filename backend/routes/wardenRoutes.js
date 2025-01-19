@@ -18,6 +18,16 @@ import {
   getComplaintsForWarden,
   updateComplaintStatus,
 } from "../controllers/complaintController.js";
+import {
+  getCurrentMonthFeedback,
+  getPreviousMonthAnalytics,
+} from "../controllers/feedbackController.js";
+import {
+  createPoll,
+  deletePoll,
+  getPollResults,
+  getWardenPolls,
+} from "../controllers/pollController.js";
 import { addMenu, getMenu, updateMenu } from "../controllers/menuController.js";
 import { getFoodWastageStats } from "../controllers/foodWastageController.js";
 const router = express.Router();
@@ -80,6 +90,23 @@ router.patch(
   authWarden,
   escalateComplaint
 );
+// Route to fetch current month feedback for a warden's hostel
+router.get("/feedback", userAuth, authWarden, getCurrentMonthFeedback);
+// Route to fetch previous month analytics for warden
+router.get(
+  "/feedback-analytics",
+  userAuth,
+  authWarden,
+  getPreviousMonthAnalytics
+);
+// Route to create a poll (warden)
+router.post("/create-poll", userAuth, authWarden, createPoll);
+// Route to delete a poll (warden)
+router.delete("/delete-poll/:pollId", userAuth, authWarden, deletePoll);
+// Route to get all polls created by the warden
+router.get("/get-polls", userAuth, authWarden, getWardenPolls);
+// Route to get poll results (warden)
+router.get("/results/:pollId", userAuth, authWarden, getPollResults);
 // router for adding a menu
 router.post("/addMenu", userAuth, authWarden, addMenu);
 // Update Menu Route
