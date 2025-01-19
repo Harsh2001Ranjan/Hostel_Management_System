@@ -18,6 +18,8 @@ import {
   viewStudentComplaints,
 } from "../controllers/complaintController.js";
 import { createLeaveApplication } from "../controllers/leaveApplicationController.js";
+import { getMenu } from "../controllers/menuController.js";
+import { markMealNotSkipped } from "../controllers/foodWastageController.js";
 
 const router = express.Router();
 
@@ -51,5 +53,8 @@ router.patch("/complaints/:complaintId/approve", userAuth, approveComplaint);
 router.patch("/complaints/:complaintId/escalate", userAuth, escalateComplaint);
 //router for leave application
 router.post("/create-leave-application", userAuth, createLeaveApplication);
-
+// router for viewing today's menu
+router.get("/viewMenu", userAuth, getMenu);
+// Route for students to mark meals they won't skip
+router.post("/mark-meal-not-skipped", userAuth, markMealNotSkipped);
 export default router;

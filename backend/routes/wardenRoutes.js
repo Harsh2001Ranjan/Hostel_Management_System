@@ -18,6 +18,8 @@ import {
   getComplaintsForWarden,
   updateComplaintStatus,
 } from "../controllers/complaintController.js";
+import { addMenu, getMenu, updateMenu } from "../controllers/menuController.js";
+import { getFoodWastageStats } from "../controllers/foodWastageController.js";
 const router = express.Router();
 
 // Route for warden login
@@ -78,4 +80,12 @@ router.patch(
   authWarden,
   escalateComplaint
 );
+// router for adding a menu
+router.post("/addMenu", userAuth, authWarden, addMenu);
+// Update Menu Route
+router.put("/updateMenu", userAuth, authWarden, updateMenu);
+// router for viewing today's menu
+router.get("/viewMenu", userAuth, authWarden, getMenu);
+// Route for warden to view food wastage statistics
+router.get("/food-wastage-stats", userAuth, authWarden, getFoodWastageStats);
 export default router;
