@@ -18,6 +18,11 @@ import {
   viewStudentComplaints,
 } from "../controllers/complaintController.js";
 import { createLeaveApplication } from "../controllers/leaveApplicationController.js";
+import { submitFeedback } from "../controllers/feedbackController.js";
+import {
+  getPollsForStudent,
+  reactToPoll,
+} from "../controllers/pollController.js";
 
 const router = express.Router();
 
@@ -51,5 +56,11 @@ router.patch("/complaints/:complaintId/approve", userAuth, approveComplaint);
 router.patch("/complaints/:complaintId/escalate", userAuth, escalateComplaint);
 //router for leave application
 router.post("/create-leave-application", userAuth, createLeaveApplication);
+// Feedback submission route
+router.post("/submit-feedback", userAuth, submitFeedback);
+// Route to get polls for a student that they haven't reacted to
+router.get("/polls", userAuth, getPollsForStudent);
+// Route to react to a poll (student)
+router.post("/react-poll/:pollId", userAuth, reactToPoll);
 
 export default router;

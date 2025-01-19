@@ -5,6 +5,7 @@ import {
   getUnresolvedEscalatedComplaints,
   updateComplaintStatus,
 } from "../controllers/complaintController.js";
+import { getPreviousMonthAnalytics } from "../controllers/feedbackController.js";
 
 const router = express.Router();
 // Route to add a new warden (accessible only by Chief Warden)
@@ -24,5 +25,11 @@ router.patch(
   authChiefWarden,
   updateComplaintStatus
 );
-
+// Route to fetch previous month analytics for chief warden
+router.post(
+  "/feedback-analytics",
+  userAuth,
+  authChiefWarden,
+  getPreviousMonthAnalytics
+);
 export default router;
