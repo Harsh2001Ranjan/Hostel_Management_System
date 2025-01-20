@@ -30,6 +30,12 @@ import {
 } from "../controllers/pollController.js";
 import { addMenu, getMenu, updateMenu } from "../controllers/menuController.js";
 import { getFoodWastageStats } from "../controllers/foodWastageController.js";
+import {
+  createNotice,
+  downloadNoticePDF,
+  getChiefWardenNotices,
+  getWardenNotices,
+} from "../controllers/noticeController.js";
 const router = express.Router();
 
 // Route for warden login
@@ -115,4 +121,13 @@ router.put("/updateMenu", userAuth, authWarden, updateMenu);
 router.get("/viewMenu", userAuth, authWarden, getMenu);
 // Route for warden to view food wastage statistics
 router.get("/food-wastage-stats", userAuth, authWarden, getFoodWastageStats);
+// Route to create a new notice
+router.post("/create-notice", userAuth, authWarden, createNotice);
+
+// Route to download a notice as a PDF
+router.get("/download-notice/:id", userAuth, authWarden, downloadNoticePDF);
+// Route to get notices created by ChiefWarden
+router.get("/chiefwarden-notice", userAuth, authWarden, getChiefWardenNotices);
+// Route to get notices created by Warden
+router.get("/warden-notice", userAuth, authWarden, getWardenNotices);
 export default router;

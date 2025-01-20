@@ -25,6 +25,11 @@ import {
 } from "../controllers/pollController.js";
 import { getMenu } from "../controllers/menuController.js";
 import { markMealNotSkipped } from "../controllers/foodWastageController.js";
+import {
+  downloadNoticePDF,
+  getChiefWardenNotices,
+  getWardenNotices,
+} from "../controllers/noticeController.js";
 
 const router = express.Router();
 
@@ -68,4 +73,11 @@ router.post("/react-poll/:pollId", userAuth, reactToPoll);
 router.get("/viewMenu", userAuth, getMenu);
 // Route for students to mark meals they won't skip
 router.post("/mark-meal-not-skipped", userAuth, markMealNotSkipped);
+
+// Route to download a notice as a PDF
+router.get("/download-notice/:id", userAuth, downloadNoticePDF);
+// Route to get notices created by ChiefWarden
+router.get("/chiefwarden-notice", userAuth, getChiefWardenNotices);
+// Route to get notices created by Warden
+router.get("/warden-notice", userAuth, getWardenNotices);
 export default router;
