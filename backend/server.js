@@ -6,6 +6,7 @@ import connectDB from "./config/mongodb.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import wardenRoutes from "./routes/wardenRoutes.js";
 import chiefwardenRoutes from "./routes/chiefwardenRoutes.js";
+import cronJobs from "./config/cronJobs.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -13,6 +14,7 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true }));
+cronJobs();
 // API END POINTS
 app.get("/", (req, res) => res.send("API Working"));
 app.use("/api/students", studentRoutes);
