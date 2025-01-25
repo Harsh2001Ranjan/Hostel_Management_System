@@ -1,5 +1,6 @@
 // src/components/landingPage/Header.jsx
 import React, { useState, useEffect } from "react";
+import Register from "../AuthPage/Register";
 import {
   AppBar,
   Toolbar,
@@ -22,12 +23,12 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const handleLoginButtonClick = () => {
-    navigate("/login");
+    navigate("/Register");
   };
 
   const handleGuestLogin = () => {
-    alert("Warden Login - Navigate to Dashboard");
-    navigate("/dashboard"); // Replace with your desired route
+    alert("Warden Login - Navigate to login");
+    navigate("/login"); // Replace with your desired route
   };
 
   const handleScroll = () => {

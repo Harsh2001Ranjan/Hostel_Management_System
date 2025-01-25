@@ -7,12 +7,13 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleGetStartedButtonClick = () => {
-    navigate("/login");
+    navigate("/Register");
   };
 
   const handleGuestLogin = () => {
     // Navigate or handle guest login logic here
     console.log("Warden login clicked");
+    navigate("/login");
   };
 
   return (
