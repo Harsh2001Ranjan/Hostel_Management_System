@@ -56,7 +56,15 @@ function OTP({ separator, length, value, onChange }) {
   };
 
   return (
-    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+    <Box
+      sx={{
+        display: "flex",
+        gap: 1,
+        alignItems: "center",
+        flexWrap: "wrap",
+        justifyContent: "center",
+      }}
+    >
       {new Array(length).fill(null).map((_, index) => (
         <React.Fragment key={index}>
           <TextField
@@ -74,6 +82,11 @@ function OTP({ separator, length, value, onChange }) {
                 fontSize: "1.25rem",
               },
               maxLength: 1,
+            }}
+            sx={{
+              flex: 1,
+              minWidth: "35px",
+              maxWidth: "50px", // Adjust to ensure the boxes stay within view
             }}
           />
           {index === length - 1 ? null : separator}
@@ -146,7 +159,11 @@ export default function OTPInput() {
             component="h6"
             variant="h4"
             gutterBottom
-            sx={{ fontWeight: "bold" }}
+            sx={{
+              fontWeight: "bold",
+              textAlign: "center",
+              fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" }, // Responsive font size
+            }}
           >
             Enter OTP
           </Typography>
@@ -166,6 +183,7 @@ export default function OTPInput() {
               padding: "0.8rem",
               backgroundColor: theme.palette.primary.main,
               "&:hover": { backgroundColor: theme.palette.primary.dark },
+              fontSize: { xs: "0.9rem", sm: "1rem" }, // Responsive font size
             }}
             onClick={handleSubmit}
           >
