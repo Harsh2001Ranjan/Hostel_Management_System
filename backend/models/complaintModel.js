@@ -44,6 +44,7 @@ const complaintSchema = new mongoose.Schema({
       "laundry",
       "drinking water",
       "night canteen",
+      "mess",
       "any other type",
     ],
   },
