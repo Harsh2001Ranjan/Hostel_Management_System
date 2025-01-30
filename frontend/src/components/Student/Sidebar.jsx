@@ -41,7 +41,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const navItems = [
   {
-    text: "Home",
+    text: "Dashboard",
     route: "dashboard",
     icon: <HomeOutlined />,
   },
@@ -50,19 +50,14 @@ const navItems = [
     icon: null,
   },
   {
-    text: "Report Complain",
+    text: "Report Complaint",
     route: "reportcomplaint",
     icon: <NoteAlt />,
   },
   {
-    text: "Approve Complain",
-    route: "approvecomplaint",
+    text: "View Complaints",
+    route: "viewcomplaint",
     icon: <TaskAlt />,
-  },
-  {
-    text: "Esclate",
-    route: "user/summary",
-    icon: <FlutterDash />,
   },
   {
     text: "Leave",
@@ -107,7 +102,7 @@ const navItems = [
   },
   {
     text: "View Notice",
-    route: "null",
+    route: "notices",
     icon: <Diversity2 />,
   },
 ];
@@ -133,11 +128,14 @@ const Sidebar = ({
             width: drawerWidth,
             "& .MuiDrawer-paper": {
               color: theme.palette.primary.contrastText,
-              backgroundColor: "#1F2937",
-              borderWidth: isNonMobile ? 0 : "2px",
+              backgroundColor: "#1F2937", // Same as navbar
+              borderWidth: 0,
               width: drawerWidth,
-              boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)",
-              borderRadius: "10px",
+              position: "fixed", // Fixes the sidebar to stay aligned
+              left: 0,
+              top: 0,
+              height: "100vh", // Full height to match navbar
+              transition: "width 0.3s ease-in-out",
             },
           }}
         >
@@ -231,45 +229,6 @@ const Sidebar = ({
                 );
               })}
             </List>
-          </Box>
-
-          {/* Profile Section */}
-          <Box marginBottom="1.5rem" bottom="2px">
-            <Divider />
-            <Box
-              display="flex"
-              justifyContent={"flex-start"}
-              textTransform="none"
-              gap="1rem"
-              m="1.5rem 2rem 0 3rem"
-            >
-              <Person
-                sx={{
-                  color: "white",
-                  fontSize: "50px",
-                  "&:hover": {
-                    color: "black", // Profile icon turns black on hover
-                  },
-                  transition: "color 0.3s",
-                }}
-              />
-              <Box textAlign="left">
-                <Typography
-                  fontWeight="bold"
-                  fontSize="1rem"
-                  sx={{
-                    color: "white",
-                    fontFamily: "'Poppins', sans-serif",
-                    "&:hover": {
-                      color: "black", // Profile text turns black on hover
-                    },
-                    transition: "color 0.3s",
-                  }}
-                >
-                  Username
-                </Typography>
-              </Box>
-            </Box>
           </Box>
         </Drawer>
       )}

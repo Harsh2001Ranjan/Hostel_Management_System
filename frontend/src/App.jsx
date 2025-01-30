@@ -13,10 +13,16 @@ import LeaveApplicationForm from "./components/Student/Leave/Leave";
 import Viewmenu from "./components/Student/Mess/Viewmenu";
 import FoodWastage from "./components/Student/Mess/FoodWastage";
 import Feedback from "./components/Student/Mess/Feedback";
+import Notice from "./components/Student/Notice/notice";
+import Poll from "./components/Student/Poll/poll";
 import ReportComplaint from "./components/Student/Complaint/ReportComplaint";
-import ApproveComplaint from "./components/Student/Complaint/ApproveComplaint";
+import ViewComplaint from "./components/Student/Complaint/ViewComplaints";
 import ChiefWardenLayout from "./components/ChiefWarden/ChiefWardenLayout";
 import ChiefWardenDashboard from "./components/ChiefWarden/Dashboard/Dashboard";
+import Addwarden from "./components/ChiefWarden/Addwarden/Add";
+import Createchiefnotice from "./components/ChiefWarden/Notice/Create";
+import ViewNotices from "./components/ChiefWarden/Notice/ViewNotices";
+import Escalatedcomplaint from "./components/ChiefWarden/Complaint/ViewComplaint";
 import WardenLayout from "./components/Warden/WardenLayout";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
@@ -63,10 +69,9 @@ const App = () => {
                     path="/reportcomplaint"
                     element={<ReportComplaint />}
                   />
-                  <Route
-                    path="/approvecomplaint"
-                    element={<ApproveComplaint />}
-                  />
+                  <Route path="/viewcomplaint" element={<ViewComplaint />} />
+                  <Route path="/notices" element={<Notice />} />
+                  <Route path="/poll" element={<Poll />} />
                 </Route>
               </Route>
               <Route>
@@ -74,6 +79,13 @@ const App = () => {
                   <Route
                     path="/chiefdashboard"
                     element={<ChiefWardenDashboard />}
+                  />
+                  <Route path="/createnotice" element={<Createchiefnotice />} />
+                  <Route path="/chiefnotices" element={<ViewNotices />} />
+                  <Route path="/addwarden" element={<Addwarden />} />
+                  <Route
+                    path="/escalatedcomplaint"
+                    element={<Escalatedcomplaint />}
                   />
                 </Route>
               </Route>

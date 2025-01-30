@@ -229,45 +229,6 @@ const Sidebar = ({
               })}
             </List>
           </Box>
-
-          {/* Profile Section */}
-          <Box marginBottom="1.5rem" bottom="2px">
-            <Divider />
-            <Box
-              display="flex"
-              justifyContent={"flex-start"}
-              textTransform="none"
-              gap="1rem"
-              m="1.5rem 2rem 0 3rem"
-            >
-              <Person
-                sx={{
-                  color: "white",
-                  fontSize: "50px",
-                  "&:hover": {
-                    color: "black", // Profile icon turns black on hover
-                  },
-                  transition: "color 0.3s",
-                }}
-              />
-              <Box textAlign="left">
-                <Typography
-                  fontWeight="bold"
-                  fontSize="1rem"
-                  sx={{
-                    color: "white",
-                    fontFamily: "'Poppins', sans-serif",
-                    "&:hover": {
-                      color: "black", // Profile text turns black on hover
-                    },
-                    transition: "color 0.3s",
-                  }}
-                >
-                  Username
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
         </Drawer>
       )}
     </Box>
