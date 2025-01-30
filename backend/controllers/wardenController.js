@@ -198,7 +198,7 @@ export const addWarden = async (req, res) => {
       hostelName,
       password: hashedPassword,
       //role: "Warden", // New wardens are assigned the 'Warden' role
-      isAccountVerified: false, // The account is initially not verified
+      isAccountVerified: true, // The account is initially not verified
     });
 
     // Save the new warden to the database
