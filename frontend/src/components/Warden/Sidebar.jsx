@@ -35,12 +35,12 @@ const navItems = [
     icon: null,
   },
   {
-    text: "Pending Leave Applications",
+    text: "Pending ",
     route: "leave-applications/pending",
     icon: <ListAlt />,
   },
   {
-    text: "Approved Leave Applications",
+    text: "Approved ",
     route: "leave-applications/approved",
     icon: <Assignment />,
   },
@@ -93,12 +93,6 @@ const navItems = [
     icon: null,
   },
   { text: "Current Feedback", route: "feedback/current", icon: <ListAlt /> },
-  { text: "Analytics", route: "feedback/analytics", icon: <Summarize /> },
-  {
-    text: "Food Wastage Control",
-    icon: null,
-  },
-  { text: "Statistics", route: "/food-wastage-stats", icon: <Summarize /> },
 ];
 
 const Sidebar = ({

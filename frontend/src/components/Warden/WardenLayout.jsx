@@ -76,7 +76,7 @@ const Layout = () => {
         </Box>
 
         {/* Main Content (Right) */}
-        <Box flexGrow={1} overflow="auto" bgcolor="lightgray">
+        <Box flexGrow={1} overflow="auto" bgcolor="background.paper">
           <Outlet />
         </Box>
       </Box>
