@@ -5,27 +5,10 @@ const CreateNoticeForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    hostel: "", // This will be populated from user data
   });
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  // Mock function to simulate fetching user data (you can replace this with actual user data fetching logic)
-  const fetchUserData = () => {
-    return {
-      hostel: "Hostel A", // Assuming this is the user's hostel fetched from their profile or database
-    };
-  };
-
-  // Automatically populate hostel field on component mount
-  useEffect(() => {
-    const userData = fetchUserData();
-    setFormData((prevData) => ({
-      ...prevData,
-      hostel: userData.hostel,
-    }));
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,7 +27,6 @@ const CreateNoticeForm = () => {
       setFormData({
         title: "",
         content: "",
-        hostel: formData.hostel, // Keep hostel the same after submission
       });
     } else {
       setErrorMessage("Failed to create notice. Please try again.");
@@ -72,7 +54,7 @@ const CreateNoticeForm = () => {
         sx={{
           fontWeight: 600,
           mb: 2,
-          color: "#212121",
+          color: "#000000", // Updated color
           textTransform: "uppercase",
           letterSpacing: "1px",
         }}
@@ -121,12 +103,12 @@ const CreateNoticeForm = () => {
                 sx: {
                   fontSize: "1rem",
                   borderRadius: "6px",
-                  borderColor: "#798bb8",
+                  borderColor: "#000000", // Updated color
                 },
               }}
               InputLabelProps={{
                 sx: {
-                  color: "#798bb8",
+                  color: "#000000", // Updated color
                   fontSize: "0.9rem",
                 },
               }}
@@ -146,54 +128,29 @@ const CreateNoticeForm = () => {
                 sx: {
                   fontSize: "1rem",
                   borderRadius: "6px",
-                  borderColor: "#798bb8",
+                  borderColor: "#000000", // Updated color
                 },
               }}
               InputLabelProps={{
                 sx: {
-                  color: "#798bb8",
+                  color: "#000000", // Updated color
                   fontSize: "0.9rem",
                 },
               }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Hostel Name"
-              name="hostel"
-              value={formData.hostel}
-              onChange={handleChange}
-              required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#798bb8",
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#798bb8",
-                  fontSize: "0.9rem",
-                },
-              }}
-              disabled // Hostel name is fetched automatically and cannot be changed
             />
           </Grid>
           <Grid item xs={12}>
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               sx={{
-                bgcolor: "#798bb8",
+                bgcolor: "#007bff", // Updated color
                 color: "#fff",
                 py: 1.5,
                 fontSize: "1rem",
                 "&:hover": {
-                  bgcolor: "#5e73a6",
+                  bgcolor: "#0056b3", // Updated color
                 },
               }}
             >

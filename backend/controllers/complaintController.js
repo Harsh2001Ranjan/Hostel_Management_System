@@ -66,6 +66,7 @@ export const viewStudentComplaints = async (req, res) => {
     // Fetch complaints for the student using their registration number
     const complaints = await complaintModel.find({
       registrationNumber: student.registrationNumber,
+      studentApproval: null,
     });
 
     if (complaints.length === 0) {

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useMediaQuery } from "@mui/material"; // Import useMediaQuery
 import {
   Menu as MenuIcon,
   ArrowDropDownOutlined,
@@ -18,6 +19,14 @@ import {
 
 const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery("(max-width: 768px)"); // Detect mobile view
+
+  // Ensure sidebar is closed initially on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile, setIsSidebarOpen]);
 
   // State to manage dropdown visibility
   const [anchorEl, setAnchorEl] = useState(null);
@@ -37,9 +46,9 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       sx={{
         position: "static",
         backgroundColor: "#1F2937", // Matching Sidebar background color
-        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)",
-        borderRadius: "10px",
+        boxShadow: "none",
         padding: "0 1.5rem",
+        borderRadius: "0", // Remove border-radius
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -58,13 +67,24 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           >
             <MenuIcon sx={{ fontSize: "25px" }} />
           </IconButton>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "white",
+              fontWeight: "bold",
+              fontFamily: "'Poppins', sans-serif",
+              letterSpacing: "0.5px",
+            }}
+          >
+            RoomMate
+          </Typography>
         </Box>
 
         {/* Right Side */}
         <Box display="flex" alignItems="center" gap="1.5rem">
           {/* Profile Section */}
           <Box display="flex" alignItems="center">
-            <Button
+            {/* <Button
               onClick={handleMenuOpen}
               sx={{
                 display: "flex",
@@ -102,6 +122,48 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   fontSize: "25px",
                 }}
               />
+            </Button> */}
+            <Button
+              onClick={handleMenuOpen}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                textTransform: "none",
+                gap: "1rem",
+                color: "white",
+                "&:hover": {
+                  color: theme.palette.primary.main,
+                },
+                transition: "color 0.3s",
+              }}
+            >
+              <AccountCircleOutlined sx={{ fontSize: "32px" }} />
+              {/* Conditionally render the text */}
+              {!isMobile && (
+                <Box textAlign="left">
+                  <Typography
+                    fontWeight="bold"
+                    fontSize="0.85rem"
+                    sx={{
+                      color: "white",
+                      fontFamily: "'Poppins', sans-serif",
+                      "&:hover": {
+                        color: theme.palette.primary.main,
+                      },
+                      transition: "color 0.3s",
+                    }}
+                  >
+                    Username
+                  </Typography>
+                </Box>
+              )}
+              <ArrowDropDownOutlined
+                sx={{
+                  color: theme.palette.secondary[300],
+                  fontSize: "25px",
+                }}
+              />
             </Button>
             {/* Dropdown Menu */}
             <Menu
@@ -126,6 +188,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 },
               }}
             >
+              {/* Render Logout option */}
               <MenuItem
                 onClick={handleMenuClose}
                 sx={{
