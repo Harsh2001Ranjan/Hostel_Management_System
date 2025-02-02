@@ -13,7 +13,13 @@ const port = process.env.PORT || 4000;
 connectDB();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+//app.use(cors({ credentials: true }));
+app.use(
+  cors({
+    origin: "http://localhost:5174", // Specify the exact origin of your frontend
+    credentials: true, // Allow credentials (cookies, etc.)
+  })
+);
 cronJobs();
 // API END POINTS
 app.get("/", (req, res) => res.send("API Working"));

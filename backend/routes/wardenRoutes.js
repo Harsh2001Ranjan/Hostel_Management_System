@@ -45,9 +45,9 @@ router.post("/login", loginWarden);
 router.post("/logout", logoutWarden);
 
 // router for resting the otp
-router.post("/send-reset-otp", userAuth, sendResetOTP);
+router.post("/send-reset-otp", sendResetOTP);
 // router for resetting the password
-router.post("/reset-password", userAuth, resetPassword);
+router.post("/reset-password", resetPassword);
 // router for getting warden data
 router.get("/get-warden-data", userAuth, authWarden, getWardenData);
 // router for getting PendingLeaveApplications

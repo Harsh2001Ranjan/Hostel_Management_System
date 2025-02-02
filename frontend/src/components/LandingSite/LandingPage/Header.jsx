@@ -132,7 +132,7 @@ const Header = () => {
                   },
                 }}
               >
-                Sign In / Register
+                Register
               </Button>
               <Button
                 variant="outlined"
@@ -157,7 +157,7 @@ const Header = () => {
                   },
                 }}
               >
-                Warden Login
+                Login
               </Button>
             </Box>
           </Box>

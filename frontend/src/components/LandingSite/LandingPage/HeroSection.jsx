@@ -146,7 +146,7 @@ const HeroSection = () => {
             }}
             onClick={handleGuestLogin}
           >
-            Warden Login
+            Login
           </Button>
         </Box>
         {/* "Wanna Try?" Text */}

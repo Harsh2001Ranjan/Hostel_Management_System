@@ -7,22 +7,28 @@ import {
   Container,
   Typography,
   TextField,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
-
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  verifyStudentAccount,
+  resetVerifyState,
+} from "../../../redux/features/authSlice"; // Ensure this path is correct
 import back from "../../../assets/back.jpg"; // Your background image path
 
+// Updated OTP component using an array for the OTP value
 function OTP({ separator, length, value, onChange }) {
   const inputRefs = React.useRef(new Array(length).fill(null));
 
   const focusInput = (targetIndex) => {
     const targetInput = inputRefs.current[targetIndex];
-    targetInput.focus();
+    if (targetInput) targetInput.focus();
   };
 
   const handleKeyDown = (event, currentIndex) => {
-    // Handling Arrow navigation and Backspace/Delete key
     if (event.key === "ArrowLeft" && currentIndex > 0) {
       event.preventDefault();
       focusInput(currentIndex - 1);
@@ -34,9 +40,10 @@ function OTP({ separator, length, value, onChange }) {
       if (value[currentIndex] === "" && currentIndex > 0) {
         focusInput(currentIndex - 1);
       } else {
-        onChange(
-          value.slice(0, currentIndex) + "" + value.slice(currentIndex + 1)
-        );
+        // Clear current digit
+        const newOtp = [...value];
+        newOtp[currentIndex] = "";
+        onChange(newOtp);
       }
     }
   };
@@ -44,11 +51,9 @@ function OTP({ separator, length, value, onChange }) {
   const handleChange = (event, currentIndex) => {
     const currentValue = event.target.value;
     if (currentValue.length === 1) {
-      onChange(
-        value.slice(0, currentIndex) +
-          currentValue +
-          value.slice(currentIndex + 1)
-      );
+      const newOtp = [...value];
+      newOtp[currentIndex] = currentValue;
+      onChange(newOtp);
       if (currentIndex < length - 1) {
         focusInput(currentIndex + 1);
       }
@@ -68,7 +73,7 @@ function OTP({ separator, length, value, onChange }) {
       {new Array(length).fill(null).map((_, index) => (
         <React.Fragment key={index}>
           <TextField
-            value={value[index] ?? ""}
+            value={value[index] || ""}
             onKeyDown={(event) => handleKeyDown(event, index)}
             onChange={(event) => handleChange(event, index)}
             inputRef={(el) => {
@@ -86,7 +91,7 @@ function OTP({ separator, length, value, onChange }) {
             sx={{
               flex: 1,
               minWidth: "35px",
-              maxWidth: "50px", // Adjust to ensure the boxes stay within view
+              maxWidth: "50px",
             }}
           />
           {index === length - 1 ? null : separator}
@@ -100,21 +105,55 @@ OTP.propTypes = {
   length: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
   separator: PropTypes.node,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default function OTPInput() {
-  const [otp, setOtp] = React.useState("");
+export default function EnterOTP() {
+  // Initialize OTP as an array of 6 empty strings
+  const [otp, setOtp] = React.useState(Array(6).fill(""));
+  const [email, setEmail] = React.useState("");
   const theme = useTheme();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleSubmit = (event) => {
+  // Extract verification state from the auth slice
+  const { verifyLoading, verifyError, verifySuccess } = useSelector(
+    (state) => state.auth
+  );
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("OTP Submitted:", otp);
 
-    // Here you can add the logic to verify OTP, and if successful, navigate to the new page
-    navigate("/login"); // Navigate to /setnewpassword after OTP is submitted
+    if (!email.trim()) {
+      console.error("Email is missing");
+      return;
+    }
+
+    // Join the OTP array into a string
+    const otpString = otp.join("");
+
+    if (otpString.length !== 6) {
+      console.error("OTP is incomplete. Current OTP:", otpString);
+      return;
+    }
+
+    // Debug: log the payload before sending
+    console.log("Dispatching verifyStudentAccount with:", {
+      email,
+      otp: otpString,
+    });
+
+    // Dispatch the verification thunk with email and otp
+    dispatch(verifyStudentAccount({ email, otp: otpString }));
   };
+
+  React.useEffect(() => {
+    if (verifySuccess) {
+      console.log("Verification successful. Navigating to /login");
+      navigate("/login");
+      dispatch(resetVerifyState());
+    }
+  }, [verifySuccess, navigate, dispatch]);
 
   return (
     <Box
@@ -145,6 +184,8 @@ export default function OTPInput() {
       <Container component="main" maxWidth="md">
         <CssBaseline />
         <Box
+          component="form"
+          onSubmit={handleSubmit}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -162,33 +203,58 @@ export default function OTPInput() {
             sx={{
               fontWeight: "bold",
               textAlign: "center",
-              fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" }, // Responsive font size
+              fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
             }}
           >
             Enter OTP
           </Typography>
+          {/* Email Input */}
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            type="email"
+            variant="outlined"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+          {/* OTP Input */}
           <OTP
             separator={<span>-</span>}
             value={otp}
             onChange={setOtp}
             length={6}
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{
-              mt: 3,
-              borderRadius: "16px",
-              padding: "0.8rem",
-              backgroundColor: theme.palette.primary.main,
-              "&:hover": { backgroundColor: theme.palette.primary.dark },
-              fontSize: { xs: "0.9rem", sm: "1rem" }, // Responsive font size
-            }}
-            onClick={handleSubmit}
-          >
-            Submit OTP
-          </Button>
+
+          {verifyError && (
+            <Alert severity="error" sx={{ mt: 2, width: "100%" }}>
+              {verifyError}
+            </Alert>
+          )}
+
+          {verifyLoading ? (
+            <Box sx={{ mt: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                borderRadius: "16px",
+                padding: "0.8rem",
+                backgroundColor: theme.palette.primary.main,
+                "&:hover": { backgroundColor: theme.palette.primary.dark },
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+              }}
+            >
+              Submit OTP
+            </Button>
+          )}
         </Box>
       </Container>
     </Box>

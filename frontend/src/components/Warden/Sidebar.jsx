@@ -76,22 +76,13 @@ const navItems = [
     text: "Mess",
     icon: null,
   },
-  {
-    text: "Mess Menu",
-    icon: null,
-  },
+
   { text: "View Menu", route: "menu/view", icon: <ListAlt /> },
   { text: "Add Menu", route: "menu/add", icon: <AddCircle /> },
-  {
-    text: "Polls",
-    icon: null,
-  },
+
   { text: "Create Poll", route: "polls/create", icon: <AddCircle /> },
   { text: "My Polls", route: "polls", icon: <ListAlt /> },
-  {
-    text: "Feedbacks",
-    icon: null,
-  },
+
   { text: "Current Feedback", route: "feedback/current", icon: <ListAlt /> },
 ];
 

@@ -68,7 +68,11 @@ const studentSchema = new mongoose.Schema({
     min: 1, // Assuming the year is between 1 and 4
     max: 4,
   },
-
+  role: {
+    type: String,
+    required: true,
+    default: "Student",
+  },
   //   {
   //     timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   //   }

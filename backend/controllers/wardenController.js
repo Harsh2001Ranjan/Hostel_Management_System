@@ -42,12 +42,14 @@ export const loginWarden = async (req, res) => {
     // Send success response
     return res.status(200).json({
       message: "Login successful",
-      warden: {
-        id: warden._id,
-        name: warden.name,
-        email: warden.email,
-        employeeId: warden.employeeId,
-      },
+      token, // Send the JWT token
+      warden, // Send the student data (or user data based on your application)
+      // warden: {
+      //   id: warden._id,
+      //   name: warden.name,
+      //   email: warden.email,
+      //   employeeId: warden.employeeId,
+      // },
       success: true,
     });
   } catch (error) {

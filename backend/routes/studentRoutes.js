@@ -42,9 +42,10 @@ router.post("/login", loginStudent);
 // Route for student logout
 router.post("/logout", logoutStudent);
 // Send OTP to mail to verify the mail
-router.post("/send-verify-otp", userAuth, sendVerifyOtpToStudent);
+//router.post("/send-verify-otp", userAuth, sendVerifyOtpToStudent);
+router.post("/send-verify-otp", sendVerifyOtpToStudent);
 // verify account using otp
-router.post("/verify-account", userAuth, verifyStudentAccount);
+router.post("/verify-account", verifyStudentAccount);
 // authentication router
 router.post("/is-auth", userAuth, isAuthenticated);
 // router for resting the otp

@@ -9,9 +9,12 @@ import {
   TextField,
   Typography,
   Link,
+  MenuItem,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useDispatch } from "react-redux";
+import { sendOtp } from "../../../redux/features/authSlice"; // Import sendOtp thunk
 
 function Copyright(props) {
   return (
@@ -34,6 +37,7 @@ function Copyright(props) {
 export default function SendOtpForm() {
   const theme = useTheme();
   const navigate = useNavigate(); // Initialize navigate
+  const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -41,8 +45,15 @@ export default function SendOtpForm() {
     const data = Object.fromEntries(formData.entries());
     console.log("Form Data:", data); // Debugging purposes
 
-    // Navigate to /setnewpassword page when the button is clicked
-    navigate("/setnewpassword");
+    // Dispatch the sendOtp action
+    dispatch(sendOtp(data))
+      .then(() => {
+        // Navigate to /setnewpassword page when the OTP is sent successfully
+        navigate("/setnewpassword");
+      })
+      .catch((err) => {
+        console.error("Error sending OTP:", err);
+      });
   };
 
   return (
@@ -120,6 +131,32 @@ export default function SendOtpForm() {
                     maxWidth: "600px", // Limit the max width on desktop (adjust as needed)
                   }}
                 />
+              </Grid>
+
+              {/* Role */}
+              <Grid item xs={12} sm={8} md={6} lg={20}>
+                <TextField
+                  select
+                  fullWidth
+                  required
+                  name="role"
+                  label="Select Role"
+                  variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
+                  sx={{
+                    width: "100%", // Full width on mobile, adjustable on desktop
+                    maxWidth: "600px", // Limit the max width on desktop (adjust as needed)
+                  }}
+                >
+                  <MenuItem value="Student">Student</MenuItem>
+                  <MenuItem value="Warden">Warden</MenuItem>
+                  <MenuItem value="ChiefWarden">ChiefWarden</MenuItem>
+                </TextField>
               </Grid>
             </Grid>
             <Button

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
@@ -9,21 +9,24 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { motion, useInView } from "framer-motion"; // Import useInView for viewport animations
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const BarChart = () => {
+  const ref = useRef(null); // Reference for detecting viewport entry
+  const isInView = useInView(ref, { once: false, margin: "-50px" });
+
   const data = {
     labels: ["Hostel A", "Hostel B", "Hostel C"],
     datasets: [
       {
         label: "Average Rating",
-        data: [4.5, 4.2, 4.7],
+        data: isInView ? [4.5, 4.2, 4.7] : [0, 0, 0], // Reset values when out of view
         backgroundColor: ["#3f51b5", "#f50057", "#4caf50"],
-        borderRadius: 10, // Adds round corners for bars
-        hoverBackgroundColor: ["#303f9f", "#d50057", "#388e3c"], // Hover effects
-        borderWidth: 1, // Adds border to the bars
+        borderRadius: 10,
+        hoverBackgroundColor: ["#303f9f", "#d50057", "#388e3c"],
+        borderWidth: 1,
       },
     ],
   };
@@ -52,14 +55,14 @@ const BarChart = () => {
     scales: {
       x: {
         grid: {
-          color: "#f0f0f0", // Light grid color for modern design
+          color: "#f0f0f0",
         },
       },
       y: {
         min: 0,
-        max: 5, // Rating scale from 0 to 5
+        max: 5,
         grid: {
-          color: "#f0f0f0", // Light grid color for modern design
+          color: "#f0f0f0",
         },
         ticks: {
           beginAtZero: true,
@@ -70,18 +73,19 @@ const BarChart = () => {
 
   return (
     <Box
+      ref={ref} // Attach reference for viewport detection
       sx={{
         mt: 4,
         p: 3,
-        backgroundColor: "#f5f5f5", // Light background color for the card
+        backgroundColor: "#f5f5f5",
         borderRadius: "10px",
-        boxShadow: 2, // Adds subtle shadow to the container
+        boxShadow: 2,
       }}
     >
-      {/* Animate the title using Framer Motion */}
+      {/* Animated Title */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <Typography
@@ -90,18 +94,21 @@ const BarChart = () => {
             fontWeight: "bold",
             color: "#333",
             mb: 2,
-            fontFamily: "'Roboto', sans-serif", // Use a modern font
+            fontFamily: "'Roboto', sans-serif",
           }}
         >
           Average Mess Ratings for Hostels
         </Typography>
       </motion.div>
 
-      {/* Animate the Bar Chart using Framer Motion */}
+      {/* Animated Bar Chart */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, scaleY: 0 }}
+        animate={
+          isInView ? { opacity: 1, scaleY: 1 } : { opacity: 0, scaleY: 0 }
+        }
         transition={{ duration: 1, delay: 0.2 }}
+        style={{ width: "100%", height: "300px", transformOrigin: "bottom" }}
       >
         <Bar data={data} options={options} />
       </motion.div>

@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import studentModel from "../models/studentModel.js";
 import transporter from "../config/nodemailer.js";
-
-// Controller function to register a student
+// controller for register
 export const registerStudent = async (req, res) => {
   try {
     // Destructuring the request body
@@ -21,6 +20,8 @@ export const registerStudent = async (req, res) => {
       parentEmail,
       currentYear,
     } = req.body;
+
+    // Validation for required fields
     if (!name) return res.status(400).json({ message: "Name is required" });
     if (!registrationNumber)
       return res
@@ -56,6 +57,7 @@ export const registerStudent = async (req, res) => {
         .status(400)
         .json({ message: "Password and repeat password do not match" });
     }
+
     // Check if student with the same registration number or email already exists
     const existingStudent = await studentModel.findOne({
       $or: [{ registrationNumber }, { email }],
@@ -89,11 +91,23 @@ export const registerStudent = async (req, res) => {
     // Save the new student to the database
     await newStudent.save();
 
-    // Send success response
-    // res.status(201).json({
-    //   message: "Student registered successfully",
-    //   student: newStudent,
-    // });
+    // Generate OTP for verification
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    newStudent.verifyOtp = otp;
+    newStudent.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiration time
+    await newStudent.save();
+
+    // Send verification OTP to the student's email
+    const mailoptions = {
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "Account Verification OTP",
+      text: `Your OTP is ${otp} to verify your account`,
+    };
+
+    await transporter.sendMail(mailoptions);
+
+    // Generate JWT token and set it as a cookie
     const token = jwt.sign({ id: newStudent._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -104,23 +118,13 @@ export const registerStudent = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    //sending welcome email
-    const mailoptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "welcome to HMS",
-      text: `welcome to HMS website. Your account has been created with email id: ${email}`,
-    };
-
-    await transporter.sendMail(mailoptions);
-
+    // Send success response
     return res.status(201).json({
-      message: "Student registered successfully",
+      message: "Student registered successfully. Verification OTP sent.",
       student: newStudent,
       success: true,
     });
   } catch (error) {
-    // console.error(error);
     // Handle server errors
     return res.status(500).json({
       success: false,
@@ -128,6 +132,7 @@ export const registerStudent = async (req, res) => {
     });
   }
 };
+
 // Controller function to log in a student
 export const loginStudent = async (req, res) => {
   try {
@@ -150,7 +155,9 @@ export const loginStudent = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
-
+    if (!student.isAccountVerified) {
+      return res.status(401).json({ message: "Student is not authenticated" });
+    }
     // Generate a JWT token
     const token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -163,21 +170,22 @@ export const loginStudent = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-
+    console.log("login Successful");
     // Send success response
     return res.status(200).json({
       message: "Login successful",
-      student: {
-        id: student._id,
-        name: student.name,
-        email: student.email,
-        registrationNumber: student.registrationNumber,
-      },
+      //message: "Login successful",
+      token, // Send the JWT token
+      student, // Send the student data (or user data based on your application)
+      // student: {
+      //   id: student._id,
+      //   name: student.name,
+      //   email: student.email,
+      //   registrationNumber: student.registrationNumber,
+      // },
       success: true,
     });
   } catch (error) {
-    //console.error(error);
-    // Handle server errors
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -207,24 +215,18 @@ export const logoutStudent = (req, res) => {
     });
   }
 };
-// Send Varification OTP to the student's Email
+
 export const sendVerifyOtpToStudent = async (req, res) => {
   try {
-    const { userId } = req.body;
-    const student = await studentModel.findById(userId);
-    if (student.isAccountVerified) {
-      return res.json({
-        success: false,
-        message: "Account already verified",
-      });
-    }
+    const { email } = req.body;
+
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     student.verifyOtp = otp;
     student.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours from now
     await student.save();
     const mailoptions = {
       from: process.env.SENDER_EMAIL,
-      to: student.email,
+      to: email,
       subject: "Account Verification OTP",
       text: `Your OTP is ${otp} to verify your account`,
     };
@@ -238,31 +240,44 @@ export const sendVerifyOtpToStudent = async (req, res) => {
   }
 };
 // Verification of OTP controller
+
 export const verifyStudentAccount = async (req, res) => {
-  const { userId, otp } = req.body;
-  if (!userId || !otp) {
-    return res.json({ success: false, message: "Missing Detials" });
+  // Expecting 'email' and 'otp' from the request body instead of 'userId'
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.json({ success: false, message: "Missing details" });
   }
+
   try {
-    const student = await studentModel.findById(userId);
+    // Find the student by their email
+    const student = await studentModel.findOne({ email });
     if (!student) {
       return res.json({ success: false, message: "Student not found" });
     }
+
+    // Check if the OTP stored in the database is valid and matches
     if (student.verifyOtp === "" || student.verifyOtp !== otp) {
       return res.json({ success: false, message: "Invalid OTP" });
     }
+
+    // Check if the OTP has expired
     if (student.verifyOtpExpireAt < Date.now()) {
       return res.json({ success: false, message: "OTP Expired" });
     }
+
+    // Update student's account status to verified
     student.isAccountVerified = true;
     student.verifyOtp = "";
     student.verifyOtpExpireAt = 0;
     await student.save();
+
     res.json({ success: true, message: "Account verified successfully" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
 };
+
 // // check for authentication if already logged in or not
 export const isAuthenticated = async (req, res) => {
   try {
