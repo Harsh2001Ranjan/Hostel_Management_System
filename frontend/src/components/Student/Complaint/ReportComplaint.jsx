@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
   Typography,
@@ -11,74 +12,65 @@ import {
   InputLabel,
   Grid,
 } from "@mui/material";
+import {
+  submitComplaint,
+  resetSuccess,
+} from "../../../redux/features/complaintSlice";
 
 const ComplaintForm = () => {
   const [formData, setFormData] = useState({
     typeOfComplaint: "",
-    description: "",
-    studentName: "",
-    registrationNumber: "",
-    hostelName: "",
-    roomNumber: "",
-    studentPhoneNumber: "",
-    studentEmail: "",
+    description: {
+      text: "",
+    },
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const dispatch = useDispatch();
+  const { isLoading, error, success } = useSelector(
+    (state) => state.complaints || {}
+  );
+
+  // Reset success message and form data after some time
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        dispatch(resetSuccess());
+        setFormData({ typeOfComplaint: "", description: { text: "" } });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, dispatch]);
 
   // Handle form field changes
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+
+    if (name === "description") {
+      setFormData((prevData) => ({
+        ...prevData,
+        description: { text: value },
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   // Submit the complaint form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
 
-    // Check if all required fields are filled
-    if (!formData.typeOfComplaint || !formData.description) {
-      setErrorMessage("Please fill out all required fields.");
+    if (!formData.typeOfComplaint || !formData.description.text) {
+      alert("Please fill out all required fields.");
       return;
     }
 
-    // Simulate a POST request to the backend (you should replace it with your actual API URL)
     try {
-      const response = await fetch("YOUR_API_URL_HERE/complaints", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccessMessage("Complaint submitted successfully!");
-        setFormData({
-          typeOfComplaint: "",
-          description: "",
-          studentName: "",
-          registrationNumber: "",
-          hostelName: "",
-          roomNumber: "",
-          studentPhoneNumber: "",
-          studentEmail: "",
-        });
-      } else {
-        setErrorMessage(
-          data.message || "Something went wrong. Please try again."
-        );
-      }
+      await dispatch(submitComplaint(formData));
     } catch (error) {
-      setErrorMessage("Error occurred while submitting the complaint.");
+      console.error("Error submitting complaint: ", error);
     }
   };
 
@@ -111,30 +103,14 @@ const ComplaintForm = () => {
         Post Your Complaint
       </Typography>
 
-      {errorMessage && (
-        <Alert
-          severity="error"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#f8d7da",
-            color: "#842029",
-          }}
-        >
-          {errorMessage}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
         </Alert>
       )}
-      {successMessage && (
-        <Alert
-          severity="success"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#d1e7dd",
-            color: "#0f5132",
-          }}
-        >
-          {successMessage}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Complaint submitted successfully!
         </Alert>
       )}
 
@@ -144,10 +120,10 @@ const ComplaintForm = () => {
             <FormControl fullWidth required>
               <InputLabel>Type of Complaint</InputLabel>
               <Select
-                label="Type of Complaint"
                 name="typeOfComplaint"
                 value={formData.typeOfComplaint}
                 onChange={handleChange}
+                required
               >
                 <MenuItem value="electrician">Electrician</MenuItem>
                 <MenuItem value="plumber">Plumber</MenuItem>
@@ -162,7 +138,7 @@ const ComplaintForm = () => {
                 <MenuItem value="laundry">Laundry</MenuItem>
                 <MenuItem value="drinking water">Drinking Water</MenuItem>
                 <MenuItem value="night canteen">Night Canteen</MenuItem>
-                <MenuItem value="night canteen">Mess</MenuItem>
+                <MenuItem value="mess">Mess</MenuItem>
                 <MenuItem value="any other type">Any Other Type</MenuItem>
               </Select>
             </FormControl>
@@ -174,7 +150,7 @@ const ComplaintForm = () => {
               variant="outlined"
               fullWidth
               name="description"
-              value={formData.description}
+              value={formData.description.text}
               onChange={handleChange}
               multiline
               rows={4}
@@ -186,19 +162,17 @@ const ComplaintForm = () => {
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               sx={{
                 bgcolor: "#007bff",
                 color: "#fff",
                 py: 1.5,
                 fontSize: "1rem",
-                "&:hover": {
-                  bgcolor: "#0056b3",
-                },
+                "&:hover": { bgcolor: "#0056b3" },
               }}
+              disabled={isLoading}
             >
-              Submit Complaint
+              {isLoading ? "Submitting..." : "Submit Complaint"}
             </Button>
           </Grid>
         </Grid>

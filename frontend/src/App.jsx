@@ -1,6 +1,11 @@
 import React from "react";
-import { useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { useSelector } from "react-redux";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import LandingPage from "./components/LandingSite/LandingPage/Index";
 import Register from "./components/LandingSite/AuthPage/Register";
 import Login from "./components/LandingSite/AuthPage/Login";
@@ -40,57 +45,57 @@ import CreatePoll from "./components/Warden/Mess/Poll/CreatePoll";
 import ViewMenu from "./components/Warden/Mess/Menu/ViewMenu";
 import MyPolls from "./components/Warden/Mess/Poll/MyPolls";
 import Current from "./components/Warden/Mess/Feedback/Current";
+
 const App = () => {
   const mode = "light"; // Replace dynamic mode selection with a static mode
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
+  const { token, role } = useSelector((state) => state.auth);
+
   return (
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
           <Routes>
-            <Route>
-              <Route>
+            {!token ? (
+              <>
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/Register" element={<Register />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset" element={<PasswordReset />} />
                 <Route path="/enterotp" element={<Enterotp />} />
                 <Route path="/setnewpassword" element={<SetNewPassword />} />
+                <Route path="*" element={<Navigate to="/login" />} />
+              </>
+            ) : role === "Student" ? (
+              <Route element={<StudentLayout />}>
+                <Route path="/dashboard" element={<StudentDashboard />} />
+                <Route path="/leave" element={<LeaveApplicationForm />} />
+                <Route path="/viewmenu" element={<Viewmenu />} />
+                <Route path="/foodwastage" element={<FoodWastage />} />
+                <Route path="/feedback" element={<Feedback />} />
+                <Route path="/reportcomplaint" element={<ReportComplaint />} />
+                <Route path="/viewcomplaint" element={<ViewComplaint />} />
+                <Route path="/notices" element={<Notice />} />
+                <Route path="/poll" element={<Poll />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
               </Route>
-              <Route>
-                <Route element={<StudentLayout />}>
-                  <Route path="/dashboard" element={<StudentDashboard />} />
-                  <Route path="/leave" element={<LeaveApplicationForm />} />
-                  <Route path="/viewmenu" element={<Viewmenu />} />
-                  <Route path="/foodwastage" element={<FoodWastage />} />
-                  <Route path="/feedback" element={<Feedback />} />
-                  <Route
-                    path="/reportcomplaint"
-                    element={<ReportComplaint />}
-                  />
-                  <Route path="/viewcomplaint" element={<ViewComplaint />} />
-                  <Route path="/notices" element={<Notice />} />
-                  <Route path="/poll" element={<Poll />} />
-                </Route>
+            ) : role === "ChiefWarden" ? (
+              <Route element={<ChiefWardenLayout />}>
+                <Route
+                  path="/chiefdashboard"
+                  element={<ChiefWardenDashboard />}
+                />
+                <Route path="/createnotice" element={<Createchiefnotice />} />
+                <Route path="/chiefnotices" element={<ViewNotices />} />
+                <Route path="/addwarden" element={<Addwarden />} />
+                <Route
+                  path="/escalatedcomplaint"
+                  element={<Escalatedcomplaint />}
+                />
+                <Route path="*" element={<Navigate to="/chiefdashboard" />} />
               </Route>
-              <Route>
-                <Route element={<ChiefWardenLayout />}>
-                  <Route
-                    path="/chiefdashboard"
-                    element={<ChiefWardenDashboard />}
-                  />
-                  <Route path="/createnotice" element={<Createchiefnotice />} />
-                  <Route path="/chiefnotices" element={<ViewNotices />} />
-                  <Route path="/addwarden" element={<Addwarden />} />
-                  <Route
-                    path="/escalatedcomplaint"
-                    element={<Escalatedcomplaint />}
-                  />
-                </Route>
-              </Route>
-            </Route>
-            <Route>
+            ) : (
               <Route element={<WardenLayout />}>
                 <Route path="/wardendashboard" element={<WardenDashboard />} />
                 <Route
@@ -103,7 +108,6 @@ const App = () => {
                 />
                 <Route path="/complaints" element={<Complaints />} />
                 <Route path="/notices/create" element={<CreateNotice />} />
-                <Route path="/notices/create" element={<CreateNotice />} />
                 <Route
                   path="/notices/chiefwarden"
                   element={<ChiefWardenNotice />}
@@ -114,8 +118,9 @@ const App = () => {
                 <Route path="/polls/create" element={<CreatePoll />} />
                 <Route path="/polls" element={<MyPolls />} />
                 <Route path="/feedback/current" element={<Current />} />
+                <Route path="*" element={<Navigate to="/wardendashboard" />} />
               </Route>
-            </Route>
+            )}
           </Routes>
         </Router>
       </ThemeProvider>

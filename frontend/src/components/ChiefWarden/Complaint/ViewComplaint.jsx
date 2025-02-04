@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,50 +9,27 @@ import {
   Snackbar,
   Box,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchUnresolvedEscalatedComplaints,
+  chiefupdateComplaintStatus,
+  resetSuccess,
+} from "../../../redux/features/complaintSlice";
 
 const UnresolvedEscalatedComplaints = () => {
-  const [complaints, setComplaints] = useState([
-    {
-      _id: "1",
-      studentName: "John Doe",
-      registrationNumber: "20225001",
-      hostelName: "Hostel A",
-      roomNumber: "101",
-      typeOfComplaint: "Electrician",
-      description: { text: "Light not working" },
-      escalation: {
-        escalatedBy: "Warden",
-        escalateReason: "Not resolved in time",
-      },
-      complaintStatus: "sent",
-    },
-    {
-      _id: "2",
-      studentName: "Jane Smith",
-      registrationNumber: "20225002",
-      hostelName: "Hostel B",
-      roomNumber: "202",
-      typeOfComplaint: "Plumber",
-      description: { text: "Leaking tap" },
-      escalation: {
-        escalatedBy: "Student",
-        escalateReason: "No response from warden",
-      },
-      complaintStatus: "sent",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { complaints, isLoading, error, success, alertMessage } = useSelector(
+    (state) => state.complaints
+  );
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  useEffect(() => {
+    dispatch(fetchUnresolvedEscalatedComplaints());
+  }, [dispatch]);
 
-  const updateComplaintStatus = (id, status) => {
-    setComplaints((prevComplaints) =>
-      prevComplaints.map((complaint) =>
-        complaint._id === id
-          ? { ...complaint, complaintStatus: status }
-          : complaint
-      )
+  const handleUpdateStatus = (id, status) => {
+    dispatch(
+      chiefupdateComplaintStatus({ complaintId: id, complaintStatus: status })
     );
-    setSnackbar({ open: true, message: `Complaint marked as ${status}` });
   };
 
   return (
@@ -69,7 +46,11 @@ const UnresolvedEscalatedComplaints = () => {
       >
         Unresolved Escalated Complaints
       </Typography>
-      {complaints.length === 0 ? (
+
+      {isLoading && <Alert severity="info">Loading complaints...</Alert>}
+      {error && <Alert severity="error">{error}</Alert>}
+
+      {complaints.length === 0 && !isLoading ? (
         <Alert severity="info">No unresolved escalated complaints found.</Alert>
       ) : (
         <Grid container spacing={3} justifyContent="center">
@@ -77,7 +58,7 @@ const UnresolvedEscalatedComplaints = () => {
             <Grid item xs={12} sm={6} md={4} key={complaint._id}>
               <Card
                 sx={{
-                  height: 280,
+                  height: 320,
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -99,6 +80,9 @@ const UnresolvedEscalatedComplaints = () => {
                     {complaint.registrationNumber})
                   </Typography>
                   <Typography variant="body2" gutterBottom>
+                    <strong>Phone:</strong> {complaint.studentPhoneNumber}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
                     <strong>Hostel:</strong> {complaint.hostelName}, Room{" "}
                     {complaint.roomNumber}
                   </Typography>
@@ -107,11 +91,11 @@ const UnresolvedEscalatedComplaints = () => {
                   </Typography>
                   <Typography variant="body2" gutterBottom>
                     <strong>Escalated By:</strong>{" "}
-                    {complaint.escalation.escalatedBy}
+                    {complaint.escalation?.escalatedBy}
                   </Typography>
                   <Typography variant="body2" gutterBottom>
                     <strong>Escalation Reason:</strong>{" "}
-                    {complaint.escalation.escalateReason}
+                    {complaint.escalation?.escalateReason}
                   </Typography>
                 </CardContent>
                 <Box
@@ -126,7 +110,7 @@ const UnresolvedEscalatedComplaints = () => {
                     variant="contained"
                     sx={{ backgroundColor: "#3a79bd", color: "white" }}
                     onClick={() =>
-                      updateComplaintStatus(complaint._id, "processing")
+                      handleUpdateStatus(complaint._id, "processing")
                     }
                   >
                     Mark as Processing
@@ -135,7 +119,7 @@ const UnresolvedEscalatedComplaints = () => {
                     variant="contained"
                     sx={{ backgroundColor: "#007bff", color: "white" }}
                     onClick={() =>
-                      updateComplaintStatus(complaint._id, "resolved")
+                      handleUpdateStatus(complaint._id, "resolved")
                     }
                   >
                     Mark as Resolved
@@ -146,11 +130,12 @@ const UnresolvedEscalatedComplaints = () => {
           ))}
         </Grid>
       )}
+
       <Snackbar
-        open={snackbar.open}
+        open={success || error}
         autoHideDuration={3000}
-        onClose={() => setSnackbar({ open: false, message: "" })}
-        message={snackbar.message}
+        onClose={() => dispatch(resetSuccess())}
+        message={alertMessage}
       />
     </Box>
   );
