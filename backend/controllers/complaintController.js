@@ -48,6 +48,7 @@ export const postComplaint = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+
 //to fetch all complaints of the student
 export const viewStudentComplaints = async (req, res) => {
   try {
@@ -359,8 +360,7 @@ export const escalateComplaint = async (req, res) => {
       } else {
         return res.status(400).json({
           success: false,
-          message:
-            "Students can only escalate ignored or unresolved complaints.",
+          message: "Students can only escalate ignored or resolved complaints.",
         });
       }
     }

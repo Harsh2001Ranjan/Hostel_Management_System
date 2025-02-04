@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchStudentComplaints,
+  approveComplaint,
+  escalateComplaint,
+} from "../../../redux/features/complaintSlice";
 import {
   Card,
   CardContent,
   Typography,
   Button,
-  TextField,
   Box,
   Rating,
+  TextField,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,31 +21,47 @@ import {
   Snackbar,
   Alert,
   Grid,
+  CircularProgress,
 } from "@mui/material";
 
 const ComplaintCard = ({ complaint }) => {
+  const dispatch = useDispatch();
   const [approval, setApproval] = useState(null);
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
   const [openEscalationDialog, setOpenEscalationDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [escalateReason, setEscalateReason] = useState("");
 
-  const handleEscalate = () => setOpenEscalationDialog(true);
+  const handleApprove = (approved) => {
+    dispatch(
+      approveComplaint({
+        complaintId: complaint._id,
+        studentApproval: approved,
+        feedback: approved ? { rating, comments: feedback } : null,
+      })
+    );
+    setSuccessMessage(
+      approved ? "Complaint approved successfully." : "Complaint disapproved."
+    );
+    setOpenSnackbar(true);
+    setApproval(approved ? "yes" : "no");
+  };
+
+  const handleEscalate = () => {
+    setOpenEscalationDialog(true);
+  };
 
   const confirmEscalate = () => {
+    dispatch(escalateComplaint({ complaintId: complaint._id, escalateReason }));
     setOpenEscalationDialog(false);
-    setSuccessMessage(
-      "Your complaint has been escalated successfully. Our team will review it shortly."
-    );
+    setSuccessMessage("Complaint escalated successfully.");
     setOpenSnackbar(true);
   };
 
   const handleSubmitFeedback = () => {
-    setSuccessMessage(
-      "Thank you for your feedback! We appreciate your time in helping us improve."
-    );
-    setOpenSnackbar(true);
+    handleApprove(true);
   };
 
   return (
@@ -59,19 +81,19 @@ const ComplaintCard = ({ complaint }) => {
         sx={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
         <Typography variant="h6" sx={{ color: "#007bff", fontWeight: "bold" }}>
-          Complaint ID: {complaint.id}
+          Complaint ID: {complaint._id}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
-          {complaint.title}
+          {complaint.description.text}
         </Typography>
         <Typography variant="subtitle2" sx={{ color: "gray", mb: 1 }}>
-          Date: {complaint.date}
+          Date: {new Date(complaint.complaintTime).toLocaleDateString()}
         </Typography>
         <Typography variant="subtitle2" sx={{ color: "gray", mb: 2 }}>
-          Status: {complaint.status}
+          Status: {complaint.complaintStatus}
         </Typography>
 
-        {complaint.status === "Resolved" && approval === null && (
+        {complaint.complaintStatus === "resolved" && approval === null && (
           <Box sx={{ mt: "auto" }}>
             <Typography variant="body2">
               Do you approve this resolution?
@@ -79,14 +101,14 @@ const ComplaintCard = ({ complaint }) => {
             <Button
               variant="contained"
               sx={{ backgroundColor: "#007bff", color: "white", mr: 1 }}
-              onClick={() => setApproval("yes")}
+              onClick={() => handleApprove(true)}
             >
               Yes
             </Button>
             <Button
               variant="contained"
               color="error"
-              onClick={() => setApproval("no")}
+              onClick={() => handleApprove(false)}
             >
               No
             </Button>
@@ -120,7 +142,8 @@ const ComplaintCard = ({ complaint }) => {
           </Box>
         )}
 
-        {(approval === "no" || complaint.status === "Ignored") && (
+        {(approval === "no" && complaint.complaintStatus === "resolved") ||
+        complaint.complaintStatus === "ignored" ? (
           <Box sx={{ mt: "auto" }}>
             <Button
               variant="contained"
@@ -130,7 +153,7 @@ const ComplaintCard = ({ complaint }) => {
               Escalate
             </Button>
           </Box>
-        )}
+        ) : null}
       </CardContent>
 
       <Dialog
@@ -142,6 +165,16 @@ const ComplaintCard = ({ complaint }) => {
           <DialogContentText>
             Are you sure you want to escalate this complaint?
           </DialogContentText>
+          <TextField
+            fullWidth
+            label="Reason for Escalation"
+            variant="outlined"
+            multiline
+            rows={3}
+            sx={{ mt: 2 }}
+            value={escalateReason}
+            onChange={(e) => setEscalateReason(e.target.value)}
+          />
         </DialogContent>
         <DialogActions>
           <Button
@@ -170,22 +203,27 @@ const ComplaintCard = ({ complaint }) => {
 };
 
 const ComplaintsList = () => {
-  const demoComplaints = [
-    { id: 1, title: "Broken Fan", status: "Resolved", date: "2025-01-01" },
-    { id: 2, title: "Leaking Tap", status: "Ignored", date: "2025-01-05" },
-    { id: 3, title: "WiFi Not Working", status: "Pending", date: "2025-01-10" },
-  ];
+  const dispatch = useDispatch();
+  const { complaints, isLoading, error } = useSelector(
+    (state) => state.complaints
+  );
+
+  useEffect(() => {
+    dispatch(fetchStudentComplaints());
+  }, [dispatch]);
 
   return (
     <Box sx={{ p: 4 }}>
+      {isLoading && <CircularProgress />}
+      {error && <Alert severity="error">{error}</Alert>}
       <Grid container spacing={3} justifyContent="center">
-        {demoComplaints.map((complaint) => (
+        {complaints.map((complaint) => (
           <Grid
             item
             xs={12}
             sm={6}
             md={4}
-            key={complaint.id}
+            key={complaint._id}
             sx={{ display: "flex", justifyContent: "center" }}
           >
             <ComplaintCard complaint={complaint} />

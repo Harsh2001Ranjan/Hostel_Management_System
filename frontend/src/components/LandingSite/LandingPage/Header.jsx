@@ -27,7 +27,7 @@ const Header = () => {
   };
 
   const handleGuestLogin = () => {
-    alert("Warden Login - Navigate to login");
+    // alert("Warden Login - Navigate to login");
     navigate("/login"); // Replace with your desired route
   };
 

@@ -11,10 +11,12 @@ import {
   Link,
   IconButton,
   MenuItem,
+  Alert,
 } from "@mui/material";
+import HomeIcon from "@mui/icons-material/Home"; // Import Home icon
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../../redux/features/authSlice"; // Import the loginUser async thunk
 
@@ -44,38 +46,27 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
+  const { error } = useSelector((state) => state.auth);
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setError(null); // Reset error before submitting
     dispatch(loginUser({ email, password, role }))
+      .unwrap()
       .then((response) => {
-        if (
-          response.payload &&
-          response.payload.student &&
-          response.payload.student.role === "Student"
-        ) {
+        if (response.student && response.student.role === "Student") {
           navigate("/dashboard");
-        } else if (
-          response.payload &&
-          response.payload.warden &&
-          response.payload.warden.role === "Warden"
-        ) {
+        } else if (response.warden && response.warden.role === "Warden") {
           navigate("/wardendashboard");
-        } else if (
-          response.payload &&
-          response.payload.warden &&
-          response.payload.warden.role === "ChiefWarden"
-        ) {
+        } else if (response.warden && response.warden.role === "ChiefWarden") {
           navigate("/chiefdashboard");
         }
       })
       .catch((err) => {
-        setError("Invalid credentials. Please try again.");
+        // Error handling is managed by redux slice
       });
   };
 
@@ -118,6 +109,23 @@ export default function LoginForm() {
             boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
           }}
         >
+          <IconButton
+            onClick={() => navigate("/")}
+            sx={{
+              position: "absolute",
+              top: "1rem",
+              left: "1rem",
+              color: theme.palette.primary.main,
+              transition: "transform 0.2s ease-in-out, color 0.2s ease-in-out",
+              "&:hover": {
+                color: theme.palette.primary.dark, // Darker shade on hover
+                transform: "scale(1.2)", // Slightly enlarge on hover
+              },
+            }}
+          >
+            <HomeIcon sx={{ fontSize: 32 }} />
+          </IconButton>
+
           <Typography
             component="h6"
             variant="h4"
@@ -133,6 +141,14 @@ export default function LoginForm() {
             noValidate
             sx={{ mt: 2 }}
           >
+            {error && (
+              <Alert
+                severity="error"
+                sx={{ width: "100%", marginBottom: "1rem" }}
+              >
+                {error}
+              </Alert>
+            )}
             <Grid container spacing={2}>
               {/* Email */}
               <Grid item xs={12}>

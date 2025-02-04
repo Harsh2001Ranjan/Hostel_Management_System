@@ -56,7 +56,7 @@ router.post("/reset-password", resetPassword);
 router.get("/get-student-data", userAuth, getStudentData);
 //router for posting complaint
 router.post("/complaint", userAuth, postComplaint);
-// Route to view all complaints for a student
+// // Route to view all complaints for a student
 router.get("/complaints", userAuth, viewStudentComplaints);
 // Route to approve a complaint
 router.patch("/complaints/:complaintId/approve", userAuth, approveComplaint);
