@@ -102,7 +102,25 @@ export const loginUser = createAsyncThunk(
           withCredentials: true,
         }
       );
-      return response.data; // Expecting token & user data from backend
+      const { token } = response.data;
+      let userRole;
+      if (role === "Student" && response.data.student) {
+        userRole = response.data.student.role;
+        localStorage.setItem("user", JSON.stringify(response.data.student));
+      } else if (
+        (role === "Warden" || role === "ChiefWarden") &&
+        response.data.warden
+      ) {
+        userRole = response.data.warden.role;
+        localStorage.setItem("user", JSON.stringify(response.data.warden));
+      } else {
+        throw new Error("Invalid response structure");
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", userRole);
+
+      return { ...response.data, role: userRole };
     } catch (error) {
       return rejectWithValue(
         error.response?.data || {

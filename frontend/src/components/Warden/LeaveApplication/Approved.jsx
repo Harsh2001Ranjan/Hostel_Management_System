@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
   Typography,
@@ -12,63 +13,86 @@ import {
   Button,
   Alert,
 } from "@mui/material";
-
-const mockData = [
-  {
-    _id: "1",
-    student: { name: "John Doe", hostelName: "Hostel A" },
-    reasonOfLeave: "Family emergency",
-    startDate: "2025-01-20T00:00:00Z",
-    endDate: "2025-01-25T00:00:00Z",
-    totalDays: 5,
-    addressToGo: "123, Park Street, Cityville",
-  },
-  {
-    _id: "2",
-    student: { name: "Jane Smith", hostelName: "Hostel B" },
-    reasonOfLeave: "Medical reasons",
-    startDate: "2025-01-22T00:00:00Z",
-    endDate: "2025-01-28T00:00:00Z",
-    totalDays: 6,
-    addressToGo: "456, Elm Avenue, Townsville",
-  },
-  {
-    _id: "3",
-    student: { name: "Alice Johnson", hostelName: "Hostel C" },
-    reasonOfLeave: "Vacation",
-    startDate: "2025-01-23T00:00:00Z",
-    endDate: "2025-01-29T00:00:00Z",
-    totalDays: 6,
-    addressToGo: "789, Maple Lane, Countryside",
-  },
-];
+import {
+  fetchApprovedLeaveApplications,
+  markReturnDetails,
+} from "../../../redux/features/leaveSlice"; // Import the markReturnDetails action
 
 const ApprovedLeaveApplications = () => {
-  const [applications, setApplications] = useState([]);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertSeverity, setAlertSeverity] = useState("");
+  const dispatch = useDispatch();
+  const { approvedApplications, loading, errorMessage, successMessage } =
+    useSelector((state) => state.leave);
 
-  const fetchApprovedApplications = async () => {
-    // Simulating backend fetch using mock data
-    setTimeout(() => {
-      setApplications(mockData);
-    }, 500); // Simulate delay for better UX
-  };
-
-  const handleMarkReturn = async (id) => {
-    try {
-      setApplications((prev) => prev.filter((app) => app._id !== id));
-      setAlertMessage("Successfully marked return and notified the parent.");
-      setAlertSeverity("success");
-    } catch (error) {
-      setAlertMessage("Failed to mark return.");
-      setAlertSeverity("error");
-    }
-  };
-
+  // Fetch approved leave applications on component mount
   useEffect(() => {
-    fetchApprovedApplications();
-  }, []);
+    dispatch(fetchApprovedLeaveApplications());
+  }, [dispatch]);
+
+  // Handle loading and error states
+  if (loading) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4, p: 3 }}>
+        <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+          Loading applications...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4, p: 3 }}>
+        <Alert
+          severity="error"
+          sx={{
+            mb: 2,
+            fontSize: "0.9rem",
+            bgcolor: "#f8d7da",
+            color: "#842029",
+          }}
+        >
+          {errorMessage}
+        </Alert>
+      </Box>
+    );
+  }
+
+  // Success message for return marked
+  if (successMessage) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4, p: 3 }}>
+        <Alert
+          severity="success"
+          sx={{
+            mb: 2,
+            fontSize: "0.9rem",
+            bgcolor: "#d4edda",
+            color: "#155724",
+          }}
+        >
+          {successMessage}
+        </Alert>
+      </Box>
+    );
+  }
+
+  // Check if approvedApplications is an array and has data
+  if (
+    !Array.isArray(approvedApplications) ||
+    approvedApplications.length === 0
+  ) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: "auto", mt: 4, p: 3 }}>
+        <Typography variant="h6" align="center">
+          No approved leave applications found.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const handleMarkReturn = (id) => {
+    dispatch(markReturnDetails(id));
+  };
 
   return (
     <Box
@@ -98,20 +122,6 @@ const ApprovedLeaveApplications = () => {
       >
         Approved Leave Applications
       </Typography>
-
-      {alertMessage && (
-        <Alert
-          severity={alertSeverity}
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: alertSeverity === "success" ? "#d1e7dd" : "#f8d7da",
-            color: alertSeverity === "success" ? "#0f5132" : "#842029",
-          }}
-        >
-          {alertMessage}
-        </Alert>
-      )}
 
       <TableContainer component={Paper}>
         <Table>
@@ -147,16 +157,18 @@ const ApprovedLeaveApplications = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {applications.map((application) => (
+            {approvedApplications.map((application) => (
               <TableRow key={application._id}>
                 <TableCell>{application._id}</TableCell>
-                <TableCell>{application.student?.name}</TableCell>
-                <TableCell>{application.student?.hostelName}</TableCell>
-                <TableCell>{application.reasonOfLeave}</TableCell>
+                <TableCell>{application.student?.name || "N/A"}</TableCell>
+                <TableCell>
+                  {application.student?.hostelName || "N/A"}
+                </TableCell>
+                <TableCell>{application.reasonOfLeave || "N/A"}</TableCell>
                 <TableCell>{application.startDate.split("T")[0]}</TableCell>
                 <TableCell>{application.endDate.split("T")[0]}</TableCell>
-                <TableCell>{application.totalDays}</TableCell>
-                <TableCell>{application.addressToGo}</TableCell>
+                <TableCell>{application.totalDays || "N/A"}</TableCell>
+                <TableCell>{application.addressToGo || "N/A"}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"

@@ -74,12 +74,7 @@ router.put(
 );
 
 // router for posting markReturnDetails
-router.post(
-  "/mark-return-details/:id",
-  userAuth,
-  authWarden,
-  markReturnDetails
-);
+router.put("/mark-return-details/:id", userAuth, authWarden, markReturnDetails);
 // Route to get complaints assigned to a specific warden
 router.get("/complaints", userAuth, authWarden, getComplaintsForWarden);
 // Route to update the status of a complaint

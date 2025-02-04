@@ -1,12 +1,15 @@
 import jwt from "jsonwebtoken";
 import wardenModel from "../models/wardenModel.js";
 export const userAuth = async (req, res, next) => {
-  const { token } = req.cookies;
+  // const { token } = req.cookies;
+  const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+  console.log(token);
   if (!token) {
     return res.json({ success: false, message: "Not Authorized. Login Again" });
   }
   try {
     const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(tokenDecode);
     if (tokenDecode.id) {
       req.body.userId = tokenDecode.id;
     } else {
@@ -15,6 +18,7 @@ export const userAuth = async (req, res, next) => {
         message: "Not Authorized. Login Again",
       });
     }
+    console.log("Token found");
     next();
   } catch (error) {
     res.json({ success: false, message: error.message });
