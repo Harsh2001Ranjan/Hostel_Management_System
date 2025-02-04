@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Base API URL
 const BASE_URL = "http://localhost:4000/api";
 
 // ✅ Async thunk for sending OTP
@@ -102,16 +101,20 @@ export const loginUser = createAsyncThunk(
           withCredentials: true,
         }
       );
+
       const { token } = response.data;
       let userRole;
+      let userName;
       if (role === "Student" && response.data.student) {
         userRole = response.data.student.role;
+        userName = response.data.student.name;
         localStorage.setItem("user", JSON.stringify(response.data.student));
       } else if (
         (role === "Warden" || role === "ChiefWarden") &&
         response.data.warden
       ) {
         userRole = response.data.warden.role;
+        userName = response.data.warden.name;
         localStorage.setItem("user", JSON.stringify(response.data.warden));
       } else {
         throw new Error("Invalid response structure");
@@ -120,8 +123,9 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem("token", token);
       localStorage.setItem("role", userRole);
 
-      return { ...response.data, role: userRole };
+      return { ...response.data, role: userRole, name: userName };
     } catch (error) {
+      console.log(error);
       return rejectWithValue(
         error.response?.data || {
           message: "Invalid credentials or login error",
@@ -154,7 +158,11 @@ export const resetPassword = createAsyncThunk(
       const response = await axios.post(endpoint, rest);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || {
+          message: "Failed to reset password",
+        }
+      );
     }
   }
 );
@@ -162,9 +170,9 @@ export const resetPassword = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null,
-    token: null,
-    role: null,
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    token: localStorage.getItem("token") || null,
+    role: localStorage.getItem("role") || null,
     isLoading: false,
     error: null,
     success: false,

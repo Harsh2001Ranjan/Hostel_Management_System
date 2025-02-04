@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import back from "../../../assets/back.jpg";
 import {
   Box,
@@ -10,6 +10,7 @@ import {
   Typography,
   Link,
   IconButton,
+  Alert,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
@@ -67,20 +68,20 @@ export default function RegistrationForm() {
 
     console.log("Form Data:", data);
 
-    // Validation: Ensure state and district are provided
     if (!data.address.state || !data.address.district) {
       console.log("Address with state and district is required");
       return;
     }
 
-    // Dispatch registration action
     dispatch(registerStudent(data));
+  };
 
-    // Redirect to OTP page after successful registration
+  // Redirect to OTP page after successful registration
+  useEffect(() => {
     if (success) {
       navigate("/enterotp");
     }
-  };
+  }, [success, navigate]);
 
   return (
     <Box
@@ -130,6 +131,20 @@ export default function RegistrationForm() {
             Registration Form
           </Typography>
 
+          {/* ✅ Display error message */}
+          {error && (
+            <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* ✅ Display success message */}
+          {success && (
+            <Alert severity="success" sx={{ width: "100%", mb: 2 }}>
+              Registration successful! Redirecting...
+            </Alert>
+          )}
+
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -146,14 +161,9 @@ export default function RegistrationForm() {
                   label="Name"
                   autoComplete="name"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Registration Number */}
               <Grid item xs={12}>
                 <TextField
@@ -163,14 +173,9 @@ export default function RegistrationForm() {
                   label="Registration Number"
                   autoComplete="registration-number"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Hostel Name */}
               <Grid item xs={12}>
                 <TextField
@@ -179,14 +184,9 @@ export default function RegistrationForm() {
                   name="hostelName"
                   label="Hostel Name"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Room Number */}
               <Grid item xs={12}>
                 <TextField
@@ -195,14 +195,9 @@ export default function RegistrationForm() {
                   name="roomNumber"
                   label="Room Number"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Phone Number */}
               <Grid item xs={12}>
                 <TextField
@@ -212,14 +207,9 @@ export default function RegistrationForm() {
                   label="Phone Number"
                   type="tel"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Parent's Phone Number */}
               <Grid item xs={12}>
                 <TextField
@@ -229,14 +219,9 @@ export default function RegistrationForm() {
                   label="Parent's Phone Number"
                   type="tel"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* State */}
               <Grid item xs={12}>
                 <TextField
@@ -245,14 +230,9 @@ export default function RegistrationForm() {
                   name="state"
                   label="State"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* District */}
               <Grid item xs={12}>
                 <TextField
@@ -261,12 +241,6 @@ export default function RegistrationForm() {
                   name="district"
                   label="District"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
 
@@ -279,14 +253,9 @@ export default function RegistrationForm() {
                   label="Email Address"
                   type="email"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Parent's Email */}
               <Grid item xs={12}>
                 <TextField
@@ -296,14 +265,9 @@ export default function RegistrationForm() {
                   label="Parent's Email Address"
                   type="email"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
                 />
               </Grid>
+
               {/* Current Year */}
               <Grid item xs={12}>
                 <TextField
@@ -313,18 +277,10 @@ export default function RegistrationForm() {
                   label="Current Year"
                   type="number"
                   variant="outlined"
-                  InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
-                  }}
-                  inputProps={{
-                    min: 1,
-                    max: 4,
-                  }}
+                  inputProps={{ min: 1, max: 4 }}
                 />
               </Grid>
+
               {/* Password */}
               <Grid item xs={12}>
                 <TextField
@@ -335,10 +291,6 @@ export default function RegistrationForm() {
                   type={showPassword ? "text" : "password"}
                   variant="outlined"
                   InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
                     endAdornment: (
                       <IconButton onClick={handleClickShowPassword} edge="end">
                         {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -347,6 +299,7 @@ export default function RegistrationForm() {
                   }}
                 />
               </Grid>
+
               {/* Repeat Password */}
               <Grid item xs={12}>
                 <TextField
@@ -357,10 +310,6 @@ export default function RegistrationForm() {
                   type={showRepeatPassword ? "text" : "password"}
                   variant="outlined"
                   InputProps={{
-                    sx: {
-                      borderRadius: "16px",
-                      backgroundColor: theme.palette.background.default,
-                    },
                     endAdornment: (
                       <IconButton
                         onClick={handleClickShowRepeatPassword}
@@ -377,22 +326,17 @@ export default function RegistrationForm() {
                 />
               </Grid>
             </Grid>
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{
-                mt: 3,
-                borderRadius: "16px",
-                padding: "0.8rem",
-                backgroundColor: theme.palette.primary.main,
-                "&:hover": {
-                  backgroundColor: theme.palette.primary.dark,
-                },
-              }}
+              sx={{ mt: 3, borderRadius: "16px", padding: "0.8rem" }}
+              disabled={isLoading}
             >
-              Register
+              {isLoading ? "Registering..." : "Register"}
             </Button>
+
             <Grid container justifyContent="center" sx={{ mt: 2 }}>
               <Grid item>
                 <Link href="/login" variant="body2" sx={{ fontWeight: "bold" }}>

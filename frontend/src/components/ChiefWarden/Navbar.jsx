@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useMediaQuery } from "@mui/material"; // Import useMediaQuery
+import { useMediaQuery } from "@mui/material";
 import {
   Menu as MenuIcon,
   ArrowDropDownOutlined,
@@ -16,23 +16,32 @@ import {
   MenuItem,
   useTheme,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/features/authSlice"; // Adjust the path as needed
 
 const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery("(max-width: 768px)"); // Detect mobile view
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const dispatch = useDispatch();
 
-  // Ensure sidebar is closed initially on mobile
+  // State to store the user's real name
+  const [userName, setUserName] = useState("");
+
   useEffect(() => {
+    // Retrieve user information from local storage
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.name) {
+      setUserName(user.name);
+    }
+
     if (isMobile) {
       setIsSidebarOpen(false);
     }
   }, [isMobile, setIsSidebarOpen]);
 
-  // State to manage dropdown visibility
   const [anchorEl, setAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
 
-  // Handlers for menu open and close
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -41,27 +50,53 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     setAnchorEl(null);
   };
 
+  const BASE_URL = "http://localhost:4000/api";
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/wardens/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Clear local storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
+
+        // Dispatch logout action
+        dispatch(logout());
+
+        // Redirect to login page or another appropriate page
+        window.location.href = "/login";
+      } else {
+        const data = await response.json();
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
   return (
     <AppBar
       sx={{
         position: "static",
-        backgroundColor: "#1F2937", // Matching Sidebar background color
+        backgroundColor: "#1F2937",
         boxShadow: "none",
         padding: "0 1.5rem",
-        borderRadius: "0", // Remove border-radius
+        borderRadius: "0",
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
-        {/* Left Side */}
         <Box display="flex" alignItems="center">
           <IconButton
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             sx={{
               marginRight: "1rem",
               color: "white",
-              "&:hover": {
-                color: theme.palette.primary.main,
-              },
+              "&:hover": { color: theme.palette.primary.main },
               transition: "color 0.3s",
             }}
           >
@@ -80,49 +115,8 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           </Typography>
         </Box>
 
-        {/* Right Side */}
         <Box display="flex" alignItems="center" gap="1.5rem">
-          {/* Profile Section */}
           <Box display="flex" alignItems="center">
-            {/* <Button
-              onClick={handleMenuOpen}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                textTransform: "none",
-                gap: "1rem",
-                color: "white",
-                "&:hover": {
-                  color: theme.palette.primary.main,
-                },
-                transition: "color 0.3s",
-              }}
-            >
-              <AccountCircleOutlined sx={{ fontSize: "32px" }} />
-              <Box textAlign="left">
-                <Typography
-                  fontWeight="bold"
-                  fontSize="0.85rem"
-                  sx={{
-                    color: "white",
-                    fontFamily: "'Poppins', sans-serif",
-                    "&:hover": {
-                      color: theme.palette.primary.main,
-                    },
-                    transition: "color 0.3s",
-                  }}
-                >
-                  Username
-                </Typography>
-              </Box>
-              <ArrowDropDownOutlined
-                sx={{
-                  color: theme.palette.secondary[300],
-                  fontSize: "25px",
-                }}
-              />
-            </Button> */}
             <Button
               onClick={handleMenuOpen}
               sx={{
@@ -132,14 +126,11 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 textTransform: "none",
                 gap: "1rem",
                 color: "white",
-                "&:hover": {
-                  color: theme.palette.primary.main,
-                },
+                "&:hover": { color: theme.palette.primary.main },
                 transition: "color 0.3s",
               }}
             >
               <AccountCircleOutlined sx={{ fontSize: "32px" }} />
-              {/* Conditionally render the text */}
               {!isMobile && (
                 <Box textAlign="left">
                   <Typography
@@ -148,36 +139,25 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     sx={{
                       color: "white",
                       fontFamily: "'Poppins', sans-serif",
-                      "&:hover": {
-                        color: theme.palette.primary.main,
-                      },
+                      "&:hover": { color: theme.palette.primary.main },
                       transition: "color 0.3s",
                     }}
                   >
-                    Username
+                    {userName}
                   </Typography>
                 </Box>
               )}
               <ArrowDropDownOutlined
-                sx={{
-                  color: theme.palette.secondary[300],
-                  fontSize: "25px",
-                }}
+                sx={{ color: theme.palette.secondary[300], fontSize: "25px" }}
               />
             </Button>
-            {/* Dropdown Menu */}
+
             <Menu
               anchorEl={anchorEl}
               open={isMenuOpen}
               onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
               sx={{
                 "& .MuiPaper-root": {
                   backgroundColor: theme.palette.background.paper,
@@ -188,9 +168,8 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 },
               }}
             >
-              {/* Render Logout option */}
               <MenuItem
-                onClick={handleMenuClose}
+                onClick={handleLogout}
                 sx={{
                   padding: "0.8rem 1.2rem",
                   color: "#1F2937",
@@ -200,9 +179,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     backgroundColor: theme.palette.primary.light,
                     color: "white",
                   },
-                  "&:active": {
-                    backgroundColor: theme.palette.primary.main,
-                  },
+                  "&:active": { backgroundColor: theme.palette.primary.main },
                   transition: "background-color 0.3s, color 0.3s",
                 }}
               >

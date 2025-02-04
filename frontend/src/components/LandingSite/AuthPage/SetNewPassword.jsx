@@ -11,11 +11,13 @@ import {
   Link,
   IconButton,
   MenuItem,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook
-import { useDispatch } from "react-redux"; // Import useDispatch hook
+import { useDispatch, useSelector } from "react-redux"; // Import useDispatch hook and useSelector
 import { resetPassword } from "../../../redux/features/authSlice"; // Import resetPassword action
 
 function Copyright(props) {
@@ -43,6 +45,9 @@ export default function SetNewPassword() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  // Extract isLoading and error state from the auth slice
+  const { isLoading, error } = useSelector((state) => state.auth);
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -54,10 +59,15 @@ export default function SetNewPassword() {
     console.log("Form Data:", data); // Debugging purposes
 
     // Dispatch the resetPassword action
-    dispatch(resetPassword(data)).then(() => {
-      // After form submission, navigate to the login page
-      navigate("/login");
-    });
+    dispatch(resetPassword(data))
+      .unwrap()
+      .then(() => {
+        // After form submission, navigate to the login page
+        navigate("/login");
+      })
+      .catch((err) => {
+        console.error("Error resetting password:", err);
+      });
   };
 
   return (
@@ -114,6 +124,14 @@ export default function SetNewPassword() {
             noValidate
             sx={{ mt: 2 }}
           >
+            {error && (
+              <Alert
+                severity="error"
+                sx={{ width: "100%", marginBottom: "1rem" }}
+              >
+                {error}
+              </Alert>
+            )}
             <Grid container spacing={2}>
               {/* Email */}
               <Grid item xs={12}>
@@ -196,22 +214,28 @@ export default function SetNewPassword() {
                 />
               </Grid>
             </Grid>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{
-                mt: 3,
-                borderRadius: "16px",
-                padding: "0.8rem",
-                backgroundColor: theme.palette.primary.main,
-                "&:hover": {
-                  backgroundColor: theme.palette.primary.dark,
-                },
-              }}
-            >
-              Confirm
-            </Button>
+            {isLoading ? (
+              <Box sx={{ mt: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{
+                  mt: 3,
+                  borderRadius: "16px",
+                  padding: "0.8rem",
+                  backgroundColor: theme.palette.primary.main,
+                  "&:hover": {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                Confirm
+              </Button>
+            )}
           </Box>
         </Box>
         <Copyright sx={{ mt: 5 }} />
