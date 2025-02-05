@@ -1,31 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Grid, Box, Typography, Alert } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createwardenNotice,
+  clearNoticeState,
+} from "../../../redux/features/noticeSlice"; // Import Redux actions
 
 const CreateNoticeForm = () => {
+  const dispatch = useDispatch();
+  const { error, successMessage } = useSelector((state) => state.notice);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    hostel: "", // This will be populated from user data
   });
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
-  // Mock function to simulate fetching user data (you can replace this with actual user data fetching logic)
-  const fetchUserData = () => {
-    return {
-      hostel: "Hostel A", // Assuming this is the user's hostel fetched from their profile or database
-    };
-  };
-
-  // Automatically populate hostel field on component mount
-  useEffect(() => {
-    const userData = fetchUserData();
-    setFormData((prevData) => ({
-      ...prevData,
-      hostel: userData.hostel,
-    }));
-  }, []);
+  const token = localStorage.getItem("token");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,22 +22,28 @@ const CreateNoticeForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
 
-    // Mock API call
-    const isValid = Math.random() > 0.2; // Simulates success or failure
-    if (isValid) {
-      setSuccessMessage("Notice created successfully!");
-      setFormData({
-        title: "",
-        content: "",
-        hostel: formData.hostel, // Keep hostel the same after submission
-      });
-    } else {
-      setErrorMessage("Failed to create notice. Please try again.");
+    if (!token) {
+      alert("Authentication error: Please log in.");
+      return;
     }
+
+    dispatch(createwardenNotice({ formData, token }));
   };
+
+  // UseEffect to clear messages after 3 seconds and reset form on success
+  useEffect(() => {
+    if (error || successMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearNoticeState()); // Clears success/error messages
+        if (successMessage) {
+          setFormData({ title: "", content: "" }); // Reset form only on success
+        }
+      }, 3000);
+
+      return () => clearTimeout(timer); // Cleanup function
+    }
+  }, [error, successMessage, dispatch]);
 
   return (
     <Box
@@ -61,48 +55,24 @@ const CreateNoticeForm = () => {
         boxShadow: 3,
         borderRadius: "8px",
         bgcolor: "#f8f9fa",
-        border: "1px solid #e0e0e0",
-        fontFamily: "'Poppins', sans-serif",
       }}
     >
       <Typography
         variant="h5"
         align="center"
         gutterBottom
-        sx={{
-          fontWeight: 600,
-          mb: 2,
-          color: "#212121",
-          textTransform: "uppercase",
-          letterSpacing: "1px",
-        }}
+        sx={{ fontWeight: 600, mb: 2, color: "#000000" }}
       >
         Create a Notice
       </Typography>
 
-      {errorMessage && (
-        <Alert
-          severity="error"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#f8d7da",
-            color: "#842029",
-          }}
-        >
-          {errorMessage}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
         </Alert>
       )}
       {successMessage && (
-        <Alert
-          severity="success"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#d1e7dd",
-            color: "#0f5132",
-          }}
-        >
+        <Alert severity="success" sx={{ mb: 2 }}>
           {successMessage}
         </Alert>
       )}
@@ -117,21 +87,9 @@ const CreateNoticeForm = () => {
               value={formData.title}
               onChange={handleChange}
               required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#798bb8",
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#798bb8",
-                  fontSize: "0.9rem",
-                },
-              }}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -142,59 +100,20 @@ const CreateNoticeForm = () => {
               multiline
               rows={4}
               required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#798bb8",
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#798bb8",
-                  fontSize: "0.9rem",
-                },
-              }}
             />
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Hostel Name"
-              name="hostel"
-              value={formData.hostel}
-              onChange={handleChange}
-              required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#798bb8",
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#798bb8",
-                  fontSize: "0.9rem",
-                },
-              }}
-              disabled // Hostel name is fetched automatically and cannot be changed
-            />
-          </Grid>
+
           <Grid item xs={12}>
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               sx={{
                 bgcolor: "#798bb8",
                 color: "#fff",
                 py: 1.5,
                 fontSize: "1rem",
-                "&:hover": {
-                  bgcolor: "#5e73a6",
-                },
+                "&:hover": { bgcolor: "#0056b3" },
               }}
             >
               Create Notice

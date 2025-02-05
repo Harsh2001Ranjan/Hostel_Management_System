@@ -1,37 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Grid, Box, Typography, Alert } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Grid,
+  Box,
+  Typography,
+  Alert,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createchiefNotice,
+  clearNoticeState,
+} from "../../../redux/features/noticeSlice"; // Importing the Redux action
 
 const CreateNoticeForm = () => {
+  const dispatch = useDispatch();
+  const { error, successMessage } = useSelector((state) => state.notice);
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    visibleToStudents: false,
   });
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleCheckboxChange = (e) => {
+    setFormData({ ...formData, visibleToStudents: e.target.checked });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
+    const token = localStorage.getItem("token");
 
-    // Mock API call
-    const isValid = Math.random() > 0.2; // Simulates success or failure
-    if (isValid) {
-      setSuccessMessage("Notice created successfully!");
-      setFormData({
-        title: "",
-        content: "",
-      });
-    } else {
-      setErrorMessage("Failed to create notice. Please try again.");
+    if (!token) {
+      alert("Authentication error: Please log in.");
+      return;
     }
+
+    dispatch(createchiefNotice({ formData, token }));
   };
+  useEffect(() => {
+    if (error || successMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearNoticeState()); // Clears messages after 3 seconds
+        if (successMessage) {
+          setFormData({ title: "", content: "", visibleToStudents: false }); // Reset form on success
+        }
+      }, 3000);
+
+      return () => clearTimeout(timer); // Cleanup timer
+    }
+  }, [error, successMessage, dispatch]);
 
   return (
     <Box
@@ -54,7 +79,7 @@ const CreateNoticeForm = () => {
         sx={{
           fontWeight: 600,
           mb: 2,
-          color: "#000000", // Updated color
+          color: "#000000",
           textTransform: "uppercase",
           letterSpacing: "1px",
         }}
@@ -62,29 +87,14 @@ const CreateNoticeForm = () => {
         Create a Notice
       </Typography>
 
-      {errorMessage && (
-        <Alert
-          severity="error"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#f8d7da",
-            color: "#842029",
-          }}
-        >
-          {errorMessage}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2, fontSize: "0.9rem" }}>
+          {error}
         </Alert>
       )}
+
       {successMessage && (
-        <Alert
-          severity="success"
-          sx={{
-            mb: 2,
-            fontSize: "0.9rem",
-            bgcolor: "#d1e7dd",
-            color: "#0f5132",
-          }}
-        >
+        <Alert severity="success" sx={{ mb: 2, fontSize: "0.9rem" }}>
           {successMessage}
         </Alert>
       )}
@@ -99,21 +109,9 @@ const CreateNoticeForm = () => {
               value={formData.title}
               onChange={handleChange}
               required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#000000", // Updated color
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#000000", // Updated color
-                  fontSize: "0.9rem",
-                },
-              }}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -124,34 +122,33 @@ const CreateNoticeForm = () => {
               multiline
               rows={4}
               required
-              InputProps={{
-                sx: {
-                  fontSize: "1rem",
-                  borderRadius: "6px",
-                  borderColor: "#000000", // Updated color
-                },
-              }}
-              InputLabelProps={{
-                sx: {
-                  color: "#000000", // Updated color
-                  fontSize: "0.9rem",
-                },
-              }}
             />
           </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.visibleToStudents}
+                  onChange={handleCheckboxChange}
+                  color="primary"
+                />
+              }
+              label="Make visible to students"
+            />
+          </Grid>
+
           <Grid item xs={12}>
             <Button
               type="submit"
               variant="contained"
               fullWidth
               sx={{
-                bgcolor: "#007bff", // Updated color
+                bgcolor: "#007bff",
                 color: "#fff",
                 py: 1.5,
                 fontSize: "1rem",
-                "&:hover": {
-                  bgcolor: "#0056b3", // Updated color
-                },
+                "&:hover": { bgcolor: "#0056b3" },
               }}
             >
               Create Notice
