@@ -16,6 +16,7 @@ export const userAuth = async (req, res, next) => {
         message: "Not Authorized. Login Again",
       });
     }
+    console.log("Token found");
     next();
   } catch (error) {
     res.json({ success: false, message: error.message });

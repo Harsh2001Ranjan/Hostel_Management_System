@@ -87,6 +87,7 @@ export const getPendingLeaveApplications = async (req, res) => {
       data: filteredApplications,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -114,6 +115,7 @@ export const getApprovedLeaveApplications = async (req, res) => {
     const filteredApplications = approvedApplications.filter(
       (application) => application.student
     );
+
     res.status(200).json({
       success: true,
       count: filteredApplications.length,
@@ -136,12 +138,22 @@ export const updateLeaveStatus = async (req, res) => {
     if (!["Pending", "Approved", "Rejected"].includes(status)) {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid status value" });
+        .json({ success: false, message: "Invalid status value", data: null });
     }
+
     if (status === "Rejected") {
       const leaveApplication = await leaveApplicationModel
         .findById(id)
         .populate("student", "email");
+
+      if (!leaveApplication) {
+        return res.status(404).json({
+          success: false,
+          message: "Leave application not found",
+          data: null,
+        });
+      }
+
       const email = leaveApplication.student?.email;
       const mailoptions = {
         from: process.env.SENDER_EMAIL,
@@ -149,71 +161,56 @@ export const updateLeaveStatus = async (req, res) => {
         subject: "Leave Application Status",
         text: "Your leave application has been rejected.",
       };
+
       await transporter.sendMail(mailoptions);
       await leaveApplicationModel.findByIdAndDelete(id);
+
       return res.status(200).json({
         success: true,
         message: "Leave application deleted successfully",
+        data: { _id: id, status: "Rejected" }, // Ensure consistent response
       });
     }
+
     if (status === "Approved") {
       const leaveApplication = await leaveApplicationModel
         .findById(id)
         .populate("student", "email parentEmail");
+
+      if (!leaveApplication) {
+        return res.status(404).json({
+          success: false,
+          message: "Leave application not found",
+          data: null,
+        });
+      }
+
       const startDate = leaveApplication.startDate;
       const endDate = leaveApplication.endDate;
       const parentEmail = leaveApplication.student?.parentEmail;
       const email = leaveApplication.student?.email;
+
       const mailoptions = {
         from: process.env.SENDER_EMAIL,
         to: `${parentEmail},${email}`,
         subject: "Leave Application Status",
         text: `Leave application has been accepted. Leaving on date ${startDate} and returning on date ${endDate}.`,
       };
+
       await transporter.sendMail(mailoptions);
-      res.status(200).json({
-        success: true,
-        message: "Leave application updated succesfully",
-      });
+      await leaveApplicationModel.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+      );
     }
-    const leaveApplication = await leaveApplicationModel.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
-
-    if (!leaveApplication) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Leave application not found" });
-    }
-
-    res.status(200).json({ success: true, data: leaveApplication });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
   }
 };
-
-// // Delete a leave application
-// export const deleteLeaveApplication = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     const leaveApplication = await leaveApplicationModel.findByIdAndDelete(id);
-//     if (!leaveApplication) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Leave application not found" });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Leave application deleted successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 
 // Mark return details
 export const markReturnDetails = async (req, res) => {
@@ -228,22 +225,38 @@ export const markReturnDetails = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Leave application not found" });
     }
-    // Sending Mail to parents
+
+    // Ensuring student data exists
     const parentEmail = leaveApplication.student?.parentEmail;
-    const mailoptions = {
+    if (!parentEmail) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Parent email not found" });
+    }
+
+    // Sending Mail to parents
+    const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: parentEmail,
       subject: "Leave Application Return Details",
       text: "Your ward has returned to the hostel.",
     };
 
-    await transporter.sendMail(mailoptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError.message);
+    }
+
+    // Deleting the leave application document
     await leaveApplicationModel.findByIdAndDelete(id);
+
     res.status(200).json({
       success: true,
       message: "Leave application deleted successfully",
     });
   } catch (error) {
+    console.error("Error in markReturnDetails:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };

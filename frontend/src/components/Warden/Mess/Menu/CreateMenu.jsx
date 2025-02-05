@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -10,6 +10,11 @@ import {
   CircularProgress,
   useTheme,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addMenu,
+  clearMessages,
+} from "../../../../redux/features/Mess/addMenuSlice";
 
 const MenuForm = () => {
   const [dayOfWeek, setDayOfWeek] = useState("Monday");
@@ -18,19 +23,14 @@ const MenuForm = () => {
   const [lunch, setLunch] = useState(["Sandwich", "Soup"]);
   const [dinner, setDinner] = useState(["Pasta", "Salad"]);
   const [specialmeal, setSpecialmeal] = useState("Grilled Chicken");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  // Simulate fetching the user's hostel from the backend or session
-  const hostel = "Hostel A"; // Replace with the actual value fetched based on the user's details
+  const dispatch = useDispatch();
+
+  // Use Redux state for loading, message, and error
+  const { loading, message, error } = useSelector((state) => state.menu);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
     const menuData = {
       dayOfWeek,
       breakfast,
@@ -38,17 +38,21 @@ const MenuForm = () => {
       lunch,
       dinner,
       specialmeal,
-      hostel,
     };
-
-    setTimeout(() => {
-      setSuccess("Menu added successfully!");
-      console.log("Menu submitted:", menuData);
-      setLoading(false);
-      resetForm();
-    }, 1000);
+    dispatch(addMenu(menuData));
   };
 
+  // Clear messages after a delay
+  useEffect(() => {
+    if (message || error) {
+      const timer = setTimeout(() => {
+        dispatch(clearMessages());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, error, dispatch]);
+
+  // Optionally reset the form on success
   const resetForm = () => {
     setDayOfWeek("Monday");
     setBreakfast(["Pancakes", "Coffee"]);
@@ -58,8 +62,14 @@ const MenuForm = () => {
     setSpecialmeal("Grilled Chicken");
   };
 
+  useEffect(() => {
+    if (message) {
+      resetForm();
+    }
+  }, [message]);
+
   const theme = useTheme();
-  const customColor = "#798bb8"; // Custom color
+  const customColor = "#798bb8";
 
   return (
     <Box
@@ -72,7 +82,7 @@ const MenuForm = () => {
         borderRadius: 2,
         boxShadow: 3,
         border: `1px solid ${customColor}`,
-        marginTop: 4, // Added top margin for spacing
+        marginTop: 4,
       }}
     >
       <h2 style={{ textAlign: "center", color: customColor }}>Add Menu</h2>
@@ -208,8 +218,8 @@ const MenuForm = () => {
       </form>
 
       {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
-      {success && (
-        <div style={{ color: "green", marginTop: 10 }}>{success}</div>
+      {message && (
+        <div style={{ color: "green", marginTop: 10 }}>{message}</div>
       )}
     </Box>
   );

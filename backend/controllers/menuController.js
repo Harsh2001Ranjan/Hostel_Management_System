@@ -135,9 +135,15 @@ export const updateMenu = async (req, res) => {
 
 // Controller to get the menu for a specific day and hostel
 export const getMenu = async (req, res) => {
-  const { dayOfWeek } = req.body; // Get the day from the request body (optional)
+  // const { dayOfWeek } = req.body; // Get the day from the request body (optional)
+  const { dayOfWeek } = req.query;
   const { userId } = req.body; // Get the logged-in user's ID from the request body
-
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized: User ID not found",
+    });
+  }
   try {
     // Get the current day of the week if dayOfWeek is not provided
     const currentDate = new Date();
@@ -211,7 +217,6 @@ export const getMenu = async (req, res) => {
         message: "Menu not found for the specified day and hostel",
       });
     }
-
     // Return the menu details
     return res.status(200).json({
       success: true,
@@ -219,7 +224,6 @@ export const getMenu = async (req, res) => {
       data: menu,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
