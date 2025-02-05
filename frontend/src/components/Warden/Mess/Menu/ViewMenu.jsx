@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Grid,
   Card,
@@ -9,6 +10,8 @@ import {
   TextField,
   MenuItem,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Fastfood,
@@ -17,15 +20,20 @@ import {
   DinnerDining,
   LocalDining,
 } from "@mui/icons-material";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert"; // Add this import for Alert
+import {
+  wardenviewMenu,
+  updateMenu,
+  clearMessages,
+} from "../../../../redux/features/Mess/viewMenuSlice"; // Adjust the import path as needed
+
+// Reusable MenuCard component
 const MenuCard = ({ title, items, Icon, iconColor, gradientColor }) => (
   <Card
     sx={{
       maxWidth: 345,
       boxShadow: 5,
       borderRadius: "16px",
-      bgcolor: `linear-gradient(135deg, ${gradientColor[0]}, ${gradientColor[1]})`,
+      background: `linear-gradient(135deg, ${gradientColor[0]}, ${gradientColor[1]})`,
       m: 2,
       height: "100%",
       transition: "transform 0.3s ease, box-shadow 0.3s ease",
@@ -40,12 +48,7 @@ const MenuCard = ({ title, items, Icon, iconColor, gradientColor }) => (
       <Typography
         variant="h6"
         component="div"
-        sx={{
-          mt: 2,
-          fontWeight: 700,
-          fontSize: "1.25rem",
-          color: "#333",
-        }}
+        sx={{ mt: 2, fontWeight: 700, fontSize: "1.25rem", color: "#333" }}
       >
         {title}
       </Typography>
@@ -69,7 +72,15 @@ const MenuCard = ({ title, items, Icon, iconColor, gradientColor }) => (
 );
 
 const MenuDisplay = () => {
-  const [menuData, setMenuData] = useState({
+  const dispatch = useDispatch();
+  // Extract Redux state from the viewMenu slice
+  const { loading, menu, message, error } = useSelector(
+    (state) => state.viewMenu
+  );
+
+  // Local state to hold the menu data for display.
+  // When the Redux state updates (from fetching or updating), we sync it here.
+  const [localMenuData, setLocalMenuData] = useState({
     breakfast: ["Pancakes", "Toast", "Coffee"],
     snack: ["Cookies", "Fruit", "Chips"],
     lunch: ["Grilled Chicken", "Salad", "Rice"],
@@ -77,6 +88,7 @@ const MenuDisplay = () => {
     specialmeal: "Vegetarian Feast",
   });
 
+  // Local state for selected day and update form data.
   const [dayOfWeek, setDayOfWeek] = useState("");
   const [formData, setFormData] = useState({
     breakfast: "",
@@ -85,6 +97,7 @@ const MenuDisplay = () => {
     dinner: "",
     specialmeal: "",
   });
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const daysOfWeek = [
     "Monday",
@@ -96,12 +109,31 @@ const MenuDisplay = () => {
     "Sunday",
   ];
 
+  // When the Redux state menu changes, update the local menu data.
+  useEffect(() => {
+    if (menu) {
+      setLocalMenuData(menu);
+    }
+  }, [menu]);
+
+  // Show Snackbar if a backend message is available.
+  useEffect(() => {
+    if (message) {
+      setNotificationOpen(true);
+      const timer = setTimeout(() => {
+        dispatch(clearMessages());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, dispatch]);
+
   const handleDayChange = (event) => {
     setDayOfWeek(event.target.value);
   };
 
+  // Dispatch the thunk to fetch the menu from the backend.
   const handleFetchMenu = () => {
-    console.log(`Fetching menu for: ${dayOfWeek}`);
+    dispatch(wardenviewMenu(dayOfWeek));
   };
 
   const handleInputChange = (e) => {
@@ -109,57 +141,25 @@ const MenuDisplay = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const [notificationOpen, setNotificationOpen] = useState(false);
-
+  // Dispatch the updateMenu thunk to update the menu in the backend.
   const handleUpdateMenu = () => {
-    console.log(
-      "Updating menu for:",
+    if (!dayOfWeek) {
+      alert("Please select a day of the week");
+      return;
+    }
+    const userId = localStorage.getItem("userId"); // Assuming the warden's userId is stored in localStorage
+    const data = {
       dayOfWeek,
-      "with the following data:",
-      formData
-    );
-
-    // Update only the menu for the selected day
-    setMenuData((prevData) => ({
-      ...prevData,
-      [dayOfWeek.toLowerCase()]: {
-        breakfast:
-          formData.breakfast.split(",") ||
-          prevData[dayOfWeek.toLowerCase()].breakfast,
-        snack:
-          formData.snack.split(",") || prevData[dayOfWeek.toLowerCase()].snack,
-        lunch:
-          formData.lunch.split(",") || prevData[dayOfWeek.toLowerCase()].lunch,
-        dinner:
-          formData.dinner.split(",") ||
-          prevData[dayOfWeek.toLowerCase()].dinner,
-        specialmeal:
-          formData.specialmeal || prevData[dayOfWeek.toLowerCase()].specialmeal,
-      },
-    }));
-
-    setNotificationOpen(true); // Show the success notification
+      userId,
+      // If a field is provided in the form, split comma-separated values (for array fields); otherwise, leave undefined so the backend won’t update that field.
+      breakfast: formData.breakfast ? formData.breakfast.split(",") : undefined,
+      snack: formData.snack ? formData.snack.split(",") : undefined,
+      lunch: formData.lunch ? formData.lunch.split(",") : undefined,
+      dinner: formData.dinner ? formData.dinner.split(",") : undefined,
+      specialmeal: formData.specialmeal ? formData.specialmeal : undefined,
+    };
+    dispatch(updateMenu(data));
   };
-  //   const handleUpdateMenu = async () => {
-  //     // Construct formData with the correct selected day
-  //     const updatedMenu = {
-  //       dayOfWeek,
-  //       breakfast: formData.breakfast.split(","),
-  //       snack: formData.snack.split(","),
-  //       lunch: formData.lunch.split(","),
-  //       dinner: formData.dinner.split(","),
-  //       specialmeal: formData.specialmeal,
-  //     };
-
-  //     try {
-  //       // Send request to backend to update the menu for the selected day
-  //       const response = await axios.post('/api/updateMenu', updatedMenu);
-  //       console.log('Menu updated successfully', response.data);
-  //       setNotificationOpen(true);
-  //     } catch (error) {
-  //       console.error('Error updating menu', error);
-  //     }
-  //   };
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 4 }}>
@@ -182,19 +182,11 @@ const MenuDisplay = () => {
         required
         sx={{
           mb: 3,
-          "& .MuiInputLabel-root": {
-            color: "#798bb8",
-          },
+          "& .MuiInputLabel-root": { color: "#798bb8" },
           "& .MuiOutlinedInput-root": {
-            "& fieldset": {
-              borderColor: "#798bb8",
-            },
-            "&:hover fieldset": {
-              borderColor: "#5a6c94",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#5a6c94",
-            },
+            "& fieldset": { borderColor: "#798bb8" },
+            "&:hover fieldset": { borderColor: "#5a6c94" },
+            "&.Mui-focused fieldset": { borderColor: "#5a6c94" },
           },
         }}
       >
@@ -223,48 +215,49 @@ const MenuDisplay = () => {
           },
         }}
       >
-        Fetch Menu
+        {loading ? "Loading..." : "Fetch Menu"}
       </Button>
 
+      {/* Display any error from the backend */}
+      {error && (
+        <Typography variant="body1" align="center" sx={{ color: "red", mt: 2 }}>
+          {error}
+        </Typography>
+      )}
+
+      {/* Display the menu items in cards */}
       <Grid container spacing={3} justifyContent="center" sx={{ mt: 4 }}>
-        {/* Breakfast Card */}
         <Grid item xs={12} sm={6} md={3}>
           <MenuCard
             title="Breakfast"
-            items={menuData.breakfast}
+            items={localMenuData.breakfast}
             Icon={BreakfastDining}
             iconColor="#ff9800"
             gradientColor={["#e9edf5", "#ffffff"]}
           />
         </Grid>
-
-        {/* Snack Card */}
         <Grid item xs={12} sm={6} md={3}>
           <MenuCard
             title="Snack"
-            items={menuData.snack}
+            items={localMenuData.snack}
             Icon={Cake}
             iconColor="#ff4081"
             gradientColor={["#e9edf5", "#ffffff"]}
           />
         </Grid>
-
-        {/* Lunch Card */}
         <Grid item xs={12} sm={6} md={3}>
           <MenuCard
             title="Lunch"
-            items={menuData.lunch}
+            items={localMenuData.lunch}
             Icon={Fastfood}
             iconColor="#4caf50"
             gradientColor={["#e9edf5", "#ffffff"]}
           />
         </Grid>
-
-        {/* Dinner Card */}
         <Grid item xs={12} sm={6} md={3}>
           <MenuCard
             title="Dinner"
-            items={menuData.dinner}
+            items={localMenuData.dinner}
             Icon={DinnerDining}
             iconColor="#3f51b5"
             gradientColor={["#e9edf5", "#ffffff"]}
@@ -283,7 +276,7 @@ const MenuDisplay = () => {
             mx: "auto",
             boxShadow: 5,
             borderRadius: "16px",
-            bgcolor: `linear-gradient(135deg, #e9edf5, #ffffff)`,
+            background: "linear-gradient(135deg, #e9edf5, #ffffff)",
             transition: "transform 0.3s ease",
             "&:hover": {
               transform: "scale(1.05)",
@@ -303,11 +296,13 @@ const MenuDisplay = () => {
                 color: "#333",
               }}
             >
-              {menuData.specialmeal}
+              {localMenuData.specialmeal}
             </Typography>
           </CardContent>
         </Card>
       </Box>
+
+      {/* Update Menu Form */}
       <Box sx={{ mt: 6 }}>
         <Card
           sx={{
@@ -384,9 +379,7 @@ const MenuDisplay = () => {
               fontSize: "1rem",
               fontWeight: 600,
               borderRadius: "8px",
-              "&:hover": {
-                bgcolor: "#388e3c",
-              },
+              "&:hover": { bgcolor: "#388e3c" },
             }}
           >
             Update Menu
@@ -405,7 +398,7 @@ const MenuDisplay = () => {
             severity="success"
             sx={{ width: "100%" }}
           >
-            Menu updated successfully!
+            {message || "Menu updated successfully!"}
           </Alert>
         </Snackbar>
       </Box>
