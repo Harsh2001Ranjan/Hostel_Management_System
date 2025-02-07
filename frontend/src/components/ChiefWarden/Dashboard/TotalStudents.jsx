@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStudents } from "../../../redux/features/Dashboard/chiefWardenDashboardSlice";
 import {
   Box,
   Typography,
@@ -9,31 +11,38 @@ import {
 import { motion } from "framer-motion";
 
 const OverviewMetrics = () => {
-  const metrics = [
-    { label: "Total Students", value: 500, color: "#3b82f6" },
-    { label: "On Leave", value: 50, color: "#f87171" },
-    { label: "Present", value: 450, color: "#10b981" },
-  ];
+  const dispatch = useDispatch();
+  const { data, loading, error } = useSelector((state) => state.chiefMetrics);
 
-  const [animatedValues, setAnimatedValues] = useState(
-    metrics.map(() => 0) // Start all values from 0
-  );
+  // Initialize animated values with 0
+  const [animatedValues, setAnimatedValues] = useState([0, 0, 0]);
 
   useEffect(() => {
-    metrics.forEach((metric, index) => {
-      let start = 0;
-      const step = Math.ceil(metric.value / 50); // Control speed of counting
-      const interval = setInterval(() => {
-        start += step;
-        setAnimatedValues((prev) => {
-          const newValues = [...prev];
-          newValues[index] = Math.min(start, metric.value);
-          return newValues;
-        });
-        if (start >= metric.value) clearInterval(interval);
-      }, 20); // Speed up counting to 20ms for faster effect
-    });
-  }, []);
+    dispatch(fetchStudents());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (data) {
+      const { totalStudents = 0, onLeave = 0, present = 0 } = data;
+      const metrics = [totalStudents, onLeave, present];
+
+      setAnimatedValues([0, 0, 0]); // Reset before animation starts
+
+      metrics.forEach((value, index) => {
+        let start = 0;
+        const step = Math.ceil(value / 50);
+        const interval = setInterval(() => {
+          start += step;
+          setAnimatedValues((prev) => {
+            const newValues = [...prev];
+            newValues[index] = Math.min(start, value);
+            return newValues;
+          });
+          if (start >= value) clearInterval(interval);
+        }, 20);
+      });
+    }
+  }, [data]);
 
   // Animation Variants
   const cardVariants = {
@@ -41,6 +50,30 @@ const OverviewMetrics = () => {
     visible: { opacity: 1, y: 0 },
     hover: { scale: 1.05 },
   };
+
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" p={5}>
+        <CircularProgress />
+      </Box>
+    );
+
+  if (error)
+    return (
+      <Typography color="error" textAlign="center" p={3}>
+        {error}
+      </Typography>
+    );
+
+  const metrics = [
+    {
+      label: "Total Students",
+      value: data?.totalStudents || 0,
+      color: "#3b82f6",
+    },
+    { label: "On Leave", value: data?.onLeave || 0, color: "#f87171" },
+    { label: "Present", value: data?.present || 0, color: "#10b981" },
+  ];
 
   return (
     <Box
@@ -75,15 +108,19 @@ const OverviewMetrics = () => {
             }}
           >
             <CardContent>
-              {/* Animated Circular Progress with multiple spins */}
+              {/* Animated Circular Progress */}
               <motion.div
                 initial={{ rotate: 0 }}
-                animate={{ rotate: 1080 }} // Spins 3 times (360 * 3)
-                transition={{ duration: 1.5, ease: "easeInOut" }} // Faster rotation speed
+                animate={{ rotate: 1080 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
               >
                 <CircularProgress
                   variant="determinate"
-                  value={(animatedValues[index] / metrics[0].value) * 100}
+                  value={
+                    metrics[0].value
+                      ? (animatedValues[index] / metrics[0].value) * 100
+                      : 0
+                  }
                   size={90}
                   thickness={4.5}
                   sx={{

@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import wardenModel from "../models/wardenModel.js";
 import transporter from "../config/nodemailer.js";
+import studentModel from "../models/studentModel.js";
+import leaveApplicationModel from "../models/leaveFormModel.js";
 
 // Controller function to log in a warden
 export const loginWarden = async (req, res) => {
@@ -233,5 +235,74 @@ export const addWarden = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+// making an controller to get students stats
+export const getMetrics = async (req, res) => {
+  try {
+    const { userId } = req.body; // Extract userId from middleware
+
+    // Find the warden/chief warden
+    const warden = await wardenModel.findById(userId);
+    if (!warden) {
+      return res.status(404).json({
+        success: false,
+        message: "Warden not found",
+      });
+    }
+
+    const { role, hostelName } = warden; // Extract role & hostel from user data
+
+    let totalStudents, onLeaveCount, presentCount;
+
+    if (role === "ChiefWarden") {
+      // Get metrics for all hostels
+      totalStudents = await studentModel.countDocuments();
+      onLeaveCount = await leaveApplicationModel.countDocuments({
+        status: "Approved",
+      });
+      presentCount = totalStudents - onLeaveCount;
+
+      return res.status(200).json({
+        role: "ChiefWarden",
+        totalStudents,
+        onLeave: onLeaveCount,
+        present: presentCount,
+        message: "Metrics fetched for Chief Warden.",
+      });
+    }
+
+    if (role === "Warden") {
+      if (!hostelName) {
+        return res.status(400).json({
+          success: false,
+          message: "Hostel name is required for Warden role.",
+        });
+      }
+
+      // Get metrics only for this warden's hostel
+      totalStudents = await studentModel.countDocuments({ hostelName });
+      onLeaveCount = await leaveApplicationModel.countDocuments({
+        status: "Approved",
+        hostelName,
+      });
+      presentCount = totalStudents - onLeaveCount;
+      return res.status(200).json({
+        role: "Warden",
+        hostelName,
+        totalStudents,
+        onLeave: onLeaveCount,
+        present: presentCount,
+        message: `Metrics fetched for ${hostelName} Warden.`,
+      });
+    }
+
+    return res.status(403).json({
+      success: false,
+      message: "Unauthorized role.",
+    });
+  } catch (error) {
+    console.error("Error fetching metrics:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };

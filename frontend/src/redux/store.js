@@ -5,17 +5,21 @@ import leaveReducer from "./features/leaveSlice";
 import addMenuReducer from "../redux/features/Mess/addMenuSlice";
 import viewMenuReducer from "../redux/features/Mess/viewMenuSlice";
 import noticeReducer from "./features/noticeSlice";
+import mealReducer from "../redux/features/Mess/foodWastageSlice";
+import metricsReducer from "../redux/features/Dashboard/wardenDashboardSlice";
+import chiefMetricsReducer from "../redux/features/Dashboard/chiefWardenDashboardSlice";
 const store = configureStore({
   reducer: {
-   
     auth: authReducer,
-   
+
     complaints: complaintReducer,
     leave: leaveReducer,
     menu: addMenuReducer,
     viewMenu: viewMenuReducer,
- ,
     notice: noticeReducer,
+    meal: mealReducer,
+    metrics: metricsReducer,
+    chiefMetrics: chiefMetricsReducer,
   },
 });
 

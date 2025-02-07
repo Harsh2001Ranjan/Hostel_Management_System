@@ -1,6 +1,6 @@
 import express from "express";
 import userAuth, { authChiefWarden } from "../middleware/authMiddleware.js";
-import { addWarden } from "../controllers/wardenController.js";
+import { addWarden, getMetrics } from "../controllers/wardenController.js";
 import {
   getUnresolvedEscalatedComplaints,
   updateComplaintStatus,
@@ -53,5 +53,12 @@ router.get(
   userAuth,
   authChiefWarden,
   getChiefWardenNotices
+);
+// Route to get students count
+router.get(
+  "/students-count-Chiefwarden",
+  userAuth,
+  authChiefWarden,
+  getMetrics
 );
 export default router;

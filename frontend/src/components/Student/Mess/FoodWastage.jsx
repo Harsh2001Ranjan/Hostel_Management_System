@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Grid,
   Card,
@@ -17,17 +18,19 @@ import {
   LunchDining,
   DinnerDining,
 } from "@mui/icons-material";
+import { markMealNotSkipped } from "../../../redux/features/Mess/foodWastageSlice"; // Adjust the path as needed
 
 const MarkMealNotSkipped = () => {
   const [meals, setMeals] = useState({
-    breakfast: true,
-    snack: true,
-    lunch: true,
-    dinner: true,
+    breakfast: false,
+    snack: false,
+    lunch: false,
+    dinner: false,
   });
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+
+  const [localMessage, setLocalMessage] = useState("");
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.meal);
 
   const handleMealToggle = (mealType) => {
     setMeals((prevMeals) => ({
@@ -37,19 +40,22 @@ const MarkMealNotSkipped = () => {
   };
 
   const handleMarkMeals = async () => {
-    setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
+    const markedMeals = Object.keys(meals).filter((meal) => meals[meal]); // Get selected meals
 
-    setTimeout(() => {
-      const markedMeals = Object.keys(meals).filter((meal) => meals[meal]);
-      if (markedMeals.length > 0) {
-        setSuccessMessage(`${markedMeals.join(", ")} marked as not skipped!`);
-      } else {
-        setErrorMessage("No meals selected to mark!");
-      }
-      setLoading(false);
-    }, 2000);
+    if (markedMeals.length === 0) {
+      setLocalMessage("No meals selected to mark!");
+      return;
+    }
+
+    try {
+      // Dispatching only the array of meals
+      const result = await dispatch(
+        markMealNotSkipped({ meals: markedMeals })
+      ).unwrap();
+      setLocalMessage(result.message);
+    } catch (err) {
+      setLocalMessage(err.message || "Something went wrong");
+    }
   };
 
   return (
@@ -60,7 +66,7 @@ const MarkMealNotSkipped = () => {
         gutterBottom
         sx={{ fontWeight: 700, mb: 4, color: "#007bff" }}
       >
-        Mark Meal as Not Skipped
+        Mark Meal that will be Skipped
       </Typography>
 
       <Grid container spacing={3} justifyContent="center">
@@ -82,7 +88,6 @@ const MarkMealNotSkipped = () => {
               }}
             >
               <CardContent sx={{ textAlign: "center", p: 3 }}>
-                {/* Meal Icon */}
                 {meal === "breakfast" && (
                   <BreakfastDining sx={{ fontSize: 80, color: "#f57c00" }} />
                 )}
@@ -96,7 +101,6 @@ const MarkMealNotSkipped = () => {
                   <DinnerDining sx={{ fontSize: 80, color: "#3f51b5" }} />
                 )}
 
-                {/* Meal Title */}
                 <Typography
                   variant="h6"
                   component="div"
@@ -112,7 +116,6 @@ const MarkMealNotSkipped = () => {
 
                 <Divider sx={{ my: 2, bgcolor: "#007bff" }} />
 
-                {/* Meal Description */}
                 <Typography
                   sx={{ fontSize: "1rem", color: "#555", mb: 2 }}
                   component="p"
@@ -120,7 +123,6 @@ const MarkMealNotSkipped = () => {
                   Example: {meal.charAt(0).toUpperCase() + meal.slice(1)} Menu
                 </Typography>
 
-                {/* Checkbox */}
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -138,12 +140,12 @@ const MarkMealNotSkipped = () => {
         ))}
       </Grid>
 
-      {/* Submit Button */}
       <Button
         variant="contained"
         color="primary"
         fullWidth
         onClick={handleMarkMeals}
+        disabled={loading}
         sx={{
           bgcolor: "#007bff",
           color: "#fff",
@@ -161,22 +163,14 @@ const MarkMealNotSkipped = () => {
         {loading ? (
           <CircularProgress size={28} sx={{ color: "#fff" }} />
         ) : (
-          "Mark Selected Meals Not Skipped"
+          "Mark "
         )}
       </Button>
 
-      {/* Success or Error Messages */}
-      {successMessage && (
+      {localMessage && (
         <Box sx={{ mt: 3, textAlign: "center" }}>
           <Typography variant="h6" sx={{ color: "#4CAF50", fontWeight: 600 }}>
-            {successMessage}
-          </Typography>
-        </Box>
-      )}
-      {errorMessage && (
-        <Box sx={{ mt: 3, textAlign: "center" }}>
-          <Typography variant="h6" sx={{ color: "#F44336", fontWeight: 600 }}>
-            {errorMessage}
+            {localMessage}
           </Typography>
         </Box>
       )}

@@ -25,6 +25,11 @@ const foodWastageSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  studentsMarked: {
+    type: [mongoose.Schema.Types.ObjectId], // Array of student IDs who marked a meal
+    default: [],
+  },
 });
 
 const foodWastageModel =

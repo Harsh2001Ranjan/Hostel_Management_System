@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getMetrics,
   getWardenData,
   loginWarden,
   logoutWarden,
@@ -125,4 +126,6 @@ router.get("/download-notice/:id", userAuth, authWarden, downloadNoticePDF);
 router.get("/chiefwarden-notice", userAuth, authWarden, getChiefWardenNotices);
 // Route to get notices created by Warden
 router.get("/warden-notice", userAuth, authWarden, getWardenNotices);
+// Route to get students count
+router.get("/students-count-warden", userAuth, authWarden, getMetrics);
 export default router;
