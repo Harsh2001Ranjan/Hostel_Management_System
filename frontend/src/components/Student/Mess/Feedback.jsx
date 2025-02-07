@@ -8,8 +8,15 @@ import {
   Alert,
   Slider,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { submitFeedback } from "../../../redux/features/Mess/feedbackSlice";
 
 const FeedbackForm = () => {
+  const dispatch = useDispatch();
+  const { loading, error, successMessage } = useSelector(
+    (state) => state.feedback
+  );
+
   const [formData, setFormData] = useState({
     foodQuality: 3,
     service: 3,
@@ -17,31 +24,13 @@ const FeedbackForm = () => {
     comment: "",
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
   const handleSliderChange = (e, newValue, name) => {
     setFormData({ ...formData, [name]: newValue });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    // Simulate form submission
-    const isValid = Math.random() > 0.2; // Simulates success or failure
-    if (isValid) {
-      setSuccessMessage("Feedback submitted successfully!");
-      setFormData({
-        foodQuality: 3,
-        service: 3,
-        cleanliness: 3,
-        comment: "",
-      });
-    } else {
-      setErrorMessage("Failed to submit feedback. Please try again.");
-    }
+    dispatch(submitFeedback(formData));
   };
 
   return (
@@ -84,7 +73,7 @@ const FeedbackForm = () => {
         Your voice matters, and your feedback shapes our progress.
       </Typography>
 
-      {errorMessage && (
+      {error && (
         <Alert
           severity="error"
           sx={{
@@ -94,7 +83,7 @@ const FeedbackForm = () => {
             color: "#842029",
           }}
         >
-          {errorMessage}
+          {typeof error === "string" ? error : "An error occurred."}
         </Alert>
       )}
       {successMessage && (
@@ -240,8 +229,9 @@ const FeedbackForm = () => {
                   bgcolor: "#0056b3",
                 },
               }}
+              disabled={loading}
             >
-              Submit Feedback
+              {loading ? "Submitting..." : "Submit Feedback"}
             </Button>
           </Grid>
         </Grid>
