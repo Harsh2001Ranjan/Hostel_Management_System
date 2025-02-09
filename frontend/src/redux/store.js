@@ -8,8 +8,13 @@ import noticeReducer from "./features/noticeSlice";
 import addWardenReducer from "./features/addWardenSlice";
 import feedbackReducer from "./features/Mess/feedbackSlice";
 import mealReducer from "../redux/features/Mess/foodWastageSlice";
-import metricsReducer from "../redux/features/Dashboard/wardenDashboardSlice";
 import chiefMetricsReducer from "../redux/features/Dashboard/chiefWardenDashboardSlice";
+import studentReducer from "../redux/features/Dashboard/studentDashboardSlice";
+import metricsReducer from "../redux/features/Dashboard/warden/stu_count";
+import feedbackAnalyticsReducer from "../redux/features/Dashboard/warden/ratingGraph";
+import ratingsReducer from "../redux/features/Dashboard/chiefWarden/barChartSlice";
+import chiefFeedbackAnalyticsReducer from "../redux/features/Dashboard/chiefWarden/hostelWiseRating";
+import wardenReducer from "../redux/features/Dashboard/chiefWarden/getWardenSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -23,7 +28,12 @@ const store = configureStore({
     feedback: feedbackReducer,
     meal: mealReducer,
     metrics: metricsReducer,
+    feedbackAnalytics: feedbackAnalyticsReducer,
     chiefMetrics: chiefMetricsReducer,
+    student: studentReducer,
+    ratings: ratingsReducer,
+    chieffeedbackAnalytics: chiefFeedbackAnalyticsReducer,
+    wardens: wardenReducer,
   },
 });
 

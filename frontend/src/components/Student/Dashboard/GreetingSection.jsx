@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { WavingHand } from "@mui/icons-material";
 
-export const GreetingSection = ({ studentName }) => {
+export const GreetingSection = () => {
+  const [studentName, setStudentName] = useState("");
+
+  useEffect(() => {
+    // Retrieve user information from local storage
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.name) {
+      setStudentName(user.name);
+    }
+  }, []);
+
   return (
     <Box sx={{ mb: 4 }}>
       {/* Hello, Name, and Waving Icon Section */}
@@ -19,7 +29,7 @@ export const GreetingSection = ({ studentName }) => {
           color="text.primary"
           sx={{ fontWeight: "normal" }}
         >
-          {studentName}
+          {studentName || "Guest"}
         </Typography>
         <WavingHand
           sx={{ fontSize: 40, color: "gold", transform: "rotate(-10deg)" }}

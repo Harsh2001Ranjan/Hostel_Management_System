@@ -1,22 +1,19 @@
+// metricsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Async thunk to fetch metrics
 export const fetchMetrics = createAsyncThunk(
   "metrics/fetchMetrics",
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token"); // Get token from localStorage
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("Unauthorized: No token found");
 
       const response = await axios.get(
         "http://localhost:4000/api/wardens/students-count-warden",
-        {
-          headers: { Authorization: `Bearer ${token}` }, // Send token in headers
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log(response.data);
-      return response.data; // Return fetched metrics
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Error fetching metrics"
@@ -27,13 +24,7 @@ export const fetchMetrics = createAsyncThunk(
 
 const metricsSlice = createSlice({
   name: "metrics",
-  initialState: {
-    data: null,
-    loading: false,
-    error: null,
-  },
-  reducers: {},
-
+  initialState: { data: null, loading: false, error: null },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMetrics.pending, (state) => {

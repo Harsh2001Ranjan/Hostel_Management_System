@@ -101,7 +101,6 @@ export const getPreviousMonthAnalytics = async (req, res) => {
     const previousMonth = `${year}-${String(month).padStart(2, "0")}`;
 
     let feedbacks;
-
     if (role === "Warden") {
       // Fetch the hostel name for the warden
       const { hostelName } = user;
@@ -195,3 +194,89 @@ export const getPreviousMonthAnalytics = async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 };
+//////////////////////////////////////////////////////////////////
+
+export const getPreviousMonthAverageRatings = async (req, res) => {
+  try {
+    // Calculate the previous month
+    const now = new Date();
+    const year =
+      now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+    const month = now.getMonth() === 0 ? 12 : now.getMonth();
+    const previousMonth = `${year}-${String(month).padStart(2, "0")}`;
+
+    // Aggregate feedback data: match previous month, compute per-document average,
+    // then group by hostelName to get overall averages.
+    const ratings = await feedbackModel.aggregate([
+      {
+        $match: { month: previousMonth },
+      },
+      {
+        $addFields: {
+          avgRating: {
+            $divide: [
+              { $add: ["$foodQuality", "$service", "$cleanliness"] },
+              3,
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$hostelName",
+          averageRating: { $avg: "$avgRating" },
+        },
+      },
+    ]);
+
+    // Return the aggregated data as a JSON response
+    res.status(200).json({ success: true, data: ratings });
+  } catch (error) {
+    console.error("Error calculating average ratings:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+///////////////////////////////////////////////////////
+// export const getPreviousMonthHostelRatings = async (req, res) => {
+//   try {
+//     // Get the previous month in YYYY-MM format
+//     const now = new Date();
+//     const year =
+//       now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+//     const month = now.getMonth() === 0 ? 12 : now.getMonth();
+//     const previousMonth = `${year}-${String(month).padStart(2, "0")}`;
+
+//     const result = await feedbackModel.aggregate([
+//       {
+//         $match: { month: previousMonth }, // Filter feedback for the previous month
+//       },
+//       {
+//         $group: {
+//           _id: "$hostel", // Group by hostel name
+//           avgFoodQuality: { $avg: "$foodQuality" },
+//           avgService: { $avg: "$service" },
+//           avgCleanliness: { $avg: "$cleanliness" },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           hostel: "$_id",
+//           foodQuality: { $round: ["$avgFoodQuality", 2] },
+//           service: { $round: ["$avgService", 2] },
+//           cleanliness: { $round: ["$avgCleanliness", 2] },
+//         },
+//       },
+//     ]);
+
+//     if (result.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: "No feedback data available for the previous month" });
+//     }
+
+//     res.status(200).json({ previousMonth, ratings: result });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };

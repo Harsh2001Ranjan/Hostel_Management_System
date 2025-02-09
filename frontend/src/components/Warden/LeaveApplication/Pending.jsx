@@ -549,6 +549,13 @@ const PendingLeaveApplications = () => {
     dispatch(fetchPendingLeaveApplications());
   }, [dispatch]);
 
+  // useEffect(() => {
+  //   if (successMessage || errorMessage) {
+  //     const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [successMessage, errorMessage, dispatch]);
+
   const handleAction = (action, id) => {
     const status = action === "Approve" ? "Approved" : "Rejected";
     dispatch(updateLeaveStatus({ id, status }));

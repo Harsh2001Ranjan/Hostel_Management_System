@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,24 +8,54 @@ import {
   Box,
   Chip,
   Grid,
+  CircularProgress,
 } from "@mui/material";
-import { Phone, Home, Email, VerifiedUser } from "@mui/icons-material";
-
-// Student Data (Mock)
-const studentData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  registrationNumber: "123456",
-  hostel: "ABC Hostel",
-  room: "101",
-  year: "2nd Year",
-  phoneNumber: "+1234567890",
-  parentsPhoneNumber: "+0987654321",
-  address: "123 Street, City, Country",
-  isAccountVerified: true,
-};
+import { VerifiedUser } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStudentData } from "../../../redux/features/Dashboard/studentDashboardSlice";
 
 const StudentDetails = () => {
+  const dispatch = useDispatch();
+  const { student, loading, error } = useSelector((state) => state.student);
+
+  useEffect(() => {
+    if (!student) {
+      dispatch(fetchStudentData());
+    }
+  }, [dispatch, student]); // Prevent unnecessary re-fetching
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <Typography color="error" variant="h6">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!student) {
+    return null; // Avoid rendering before data is available
+  }
+
   return (
     <Card
       sx={{
@@ -37,13 +67,10 @@ const StudentDetails = () => {
         overflow: "hidden",
         border: "1px solid #e0e0e0",
         transition: "transform 0.2s ease-in-out",
-        "&:hover": {
-          transform: "scale(1.02)",
-        },
+        "&:hover": { transform: "scale(1.02)" },
       }}
     >
       <CardContent sx={{ padding: 4 }}>
-        {/* Profile Avatar */}
         <Avatar
           sx={{
             width: 120,
@@ -57,10 +84,9 @@ const StudentDetails = () => {
             boxShadow: 6,
           }}
         >
-          {studentData.name.charAt(0)}
+          {student.name?.charAt(0) || "?"}
         </Avatar>
 
-        {/* Name & Registration */}
         <Typography
           variant="h4"
           sx={{
@@ -70,119 +96,92 @@ const StudentDetails = () => {
             fontFamily: '"Roboto", sans-serif',
           }}
         >
-          {studentData.name}
+          {student.name}
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-          Registration No: {studentData.registrationNumber}
+          Registration No: {student.registrationNumber}
         </Typography>
 
-        {/* Divider */}
         <Divider sx={{ mb: 3 }} />
 
-        {/* Student Info */}
         <Grid container spacing={3}>
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Year:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.year}
+              {student.year}
             </Typography>
           </Grid>
 
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Hostel:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.hostel}, Room: {studentData.room}
+              {student.hostel}, Room: {student.room}
             </Typography>
           </Grid>
 
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Phone:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.phoneNumber}
+              {student.phoneNumber}
             </Typography>
           </Grid>
 
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Parents' Phone:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.parentsPhoneNumber}
+              {student.parentsPhoneNumber}
             </Typography>
           </Grid>
 
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Email:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.email}
+              {student.email}
             </Typography>
           </Grid>
 
           <Grid item xs={6}>
             <Typography
               variant="body2"
-              sx={{
-                fontWeight: "600",
-                color: "#3f51b5",
-                marginBottom: 1,
-              }}
+              sx={{ fontWeight: "600", color: "#3f51b5", mb: 1 }}
             >
               Address:
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {studentData.address}
+              {student.address?.state}, {student.address?.district}
             </Typography>
           </Grid>
         </Grid>
 
         <Divider sx={{ mb: 3, mt: 3 }} />
 
-        {/* Account Verification */}
         <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
-          {studentData.isAccountVerified ? (
+          {student.isAccountVerified ? (
             <Chip
               label="Verified"
               icon={<VerifiedUser fontSize="small" />}

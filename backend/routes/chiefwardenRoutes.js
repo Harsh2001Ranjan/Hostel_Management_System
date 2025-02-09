@@ -1,11 +1,18 @@
 import express from "express";
 import userAuth, { authChiefWarden } from "../middleware/authMiddleware.js";
-import { addWarden, getMetrics } from "../controllers/wardenController.js";
+import {
+  addWarden,
+  getAllWardens,
+  getMetrics,
+} from "../controllers/wardenController.js";
 import {
   getUnresolvedEscalatedComplaints,
   updateComplaintStatus,
 } from "../controllers/complaintController.js";
-import { getPreviousMonthAnalytics } from "../controllers/feedbackController.js";
+import {
+  getPreviousMonthAnalytics,
+  getPreviousMonthAverageRatings,
+} from "../controllers/feedbackController.js";
 import {
   createNotice,
   downloadNoticePDF,
@@ -31,7 +38,7 @@ router.patch(
   updateComplaintStatus
 );
 // Route to fetch previous month analytics for chief warden
-router.post(
+router.get(
   "/feedback-analytics",
   userAuth,
   authChiefWarden,
@@ -61,4 +68,11 @@ router.get(
   authChiefWarden,
   getMetrics
 );
+router.get(
+  "/previous-month-ratings",
+  userAuth,
+  authChiefWarden,
+  getPreviousMonthAverageRatings
+);
+router.get("/get-all-wardens", userAuth, authChiefWarden, getAllWardens);
 export default router;
