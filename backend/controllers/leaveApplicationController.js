@@ -171,7 +171,7 @@ export const updateLeaveStatus = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: "Leave application deleted successfully",
+        message: `Leave application ${status} successfully`,
         data: { _id: id, status: "Rejected" }, // Ensure consistent response
       });
     }
