@@ -15,6 +15,8 @@ import feedbackAnalyticsReducer from "../redux/features/Dashboard/warden/ratingG
 import ratingsReducer from "../redux/features/Dashboard/chiefWarden/barChartSlice";
 import chiefFeedbackAnalyticsReducer from "../redux/features/Dashboard/chiefWarden/hostelWiseRating";
 import wardenReducer from "../redux/features/Dashboard/chiefWarden/getWardenSlice";
+import pollReducer from "./features/Mess/poll/pollSlice";
+import studentpollSlice from "./features/Mess/poll/studentpollSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -34,6 +36,8 @@ const store = configureStore({
     ratings: ratingsReducer,
     chieffeedbackAnalytics: chiefFeedbackAnalyticsReducer,
     wardens: wardenReducer,
+    poll: pollReducer,
+    polls: studentpollSlice,
   },
 });
 

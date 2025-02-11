@@ -51,12 +51,14 @@ export const deletePoll = async (req, res) => {
         .status(403)
         .json({ error: "You can only delete polls you created." });
     }
-
+    console.log(pollId);
     // Delete the poll
-    pollModel.deleteOne({ _id: pollId });
+    await pollModel.deleteOne({ _id: pollId });
+    console.log("Poll deleted successfully.");
 
     res.status(200).json({ message: "Poll deleted successfully." });
   } catch (error) {
+    console.log(error);
     console.error("Error deleting poll:", error);
     res.status(500).json({ error: "Internal server error." });
   }
@@ -138,6 +140,43 @@ export const getPollResults = async (req, res) => {
     const results = {};
     poll.options.forEach((option) => {
       results[option] = 0; // Initialize the count for each option
+    });
+
+    poll.reactions.forEach((reaction) => {
+      if (results[reaction.option] !== undefined) {
+        results[reaction.option]++;
+      }
+    });
+
+    // Respond with the poll results
+    res.status(200).json({
+      message: "Poll results fetched successfully.",
+      poll: {
+        question: poll.question,
+        options: poll.options,
+      },
+      results,
+    });
+  } catch (error) {
+    console.error("Error fetching poll results:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+//poll result for student
+export const getStudentPollResults = async (req, res) => {
+  try {
+    const { pollId } = req.params;
+
+    // Find the poll
+    const poll = await pollModel.findById(pollId);
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found." });
+    }
+
+    // Calculate results
+    const results = {};
+    poll.options.forEach((option) => {
+      results[option] = 0; // Initialize count for each option
     });
 
     poll.reactions.forEach((reaction) => {

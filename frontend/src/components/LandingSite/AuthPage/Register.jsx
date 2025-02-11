@@ -65,15 +65,20 @@ export default function RegistrationForm() {
         district: formData.get("district"),
       },
     };
-
-    console.log("Form Data:", data);
-
-    if (!data.address.state || !data.address.district) {
-      console.log("Address with state and district is required");
-      return;
-    }
-
-    dispatch(registerStudent(data));
+    dispatch(registerStudent(data))
+      .unwrap()
+      .then((response) => {
+        if (response.success) {
+          //alert(response.message); // ✅ Show success message
+          navigate("/enterotp"); // ✅ Navigate only when success is true
+        } else {
+          throw new Error(response.message); // Force error handling
+        }
+      })
+      .catch((err) => {
+        console.error("Error in registration:", err);
+        //alert(err.message || "Registration failed"); // ✅ Show error message
+      });
   };
 
   // Redirect to OTP page after successful registration
@@ -161,6 +166,12 @@ export default function RegistrationForm() {
                   label="Name"
                   autoComplete="name"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -173,6 +184,12 @@ export default function RegistrationForm() {
                   label="Registration Number"
                   autoComplete="registration-number"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -184,6 +201,12 @@ export default function RegistrationForm() {
                   name="hostelName"
                   label="Hostel Name"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -195,6 +218,12 @@ export default function RegistrationForm() {
                   name="roomNumber"
                   label="Room Number"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -207,6 +236,12 @@ export default function RegistrationForm() {
                   label="Phone Number"
                   type="tel"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -219,6 +254,12 @@ export default function RegistrationForm() {
                   label="Parent's Phone Number"
                   type="tel"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -230,6 +271,12 @@ export default function RegistrationForm() {
                   name="state"
                   label="State"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -241,6 +288,12 @@ export default function RegistrationForm() {
                   name="district"
                   label="District"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -253,6 +306,12 @@ export default function RegistrationForm() {
                   label="Email Address"
                   type="email"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -265,6 +324,12 @@ export default function RegistrationForm() {
                   label="Parent's Email Address"
                   type="email"
                   variant="outlined"
+                  InputProps={{
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -277,7 +342,20 @@ export default function RegistrationForm() {
                   label="Current Year"
                   type="number"
                   variant="outlined"
-                  inputProps={{ min: 1, max: 4 }}
+                  // InputProps={{
+                  //   sx: {
+                  //     borderRadius: "16px",
+                  //     backgroundColor: theme.palette.background.default,
+                  //   },
+                  // }}
+                  inputProps={{
+                    min: 1,
+                    max: 4,
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
+                  }}
                 />
               </Grid>
 
@@ -296,6 +374,10 @@ export default function RegistrationForm() {
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     ),
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
                   }}
                 />
               </Grid>
@@ -322,6 +404,10 @@ export default function RegistrationForm() {
                         )}
                       </IconButton>
                     ),
+                    sx: {
+                      borderRadius: "16px",
+                      backgroundColor: theme.palette.background.default,
+                    },
                   }}
                 />
               </Grid>
