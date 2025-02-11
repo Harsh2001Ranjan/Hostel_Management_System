@@ -21,6 +21,7 @@ import { createLeaveApplication } from "../controllers/leaveApplicationControlle
 import { submitFeedback } from "../controllers/feedbackController.js";
 import {
   getPollsForStudent,
+  getStudentPollResults,
   reactToPoll,
 } from "../controllers/pollController.js";
 import { getMenu } from "../controllers/menuController.js";
@@ -68,6 +69,8 @@ router.post("/create-leave-application", userAuth, createLeaveApplication);
 router.post("/submit-feedback", userAuth, submitFeedback);
 // Route to get polls for a student that they haven't reacted to
 router.get("/polls", userAuth, getPollsForStudent);
+// Route to get polls for a student that they haven't reacted to
+router.get("/polls/:pollId", userAuth, getStudentPollResults);
 // Route to react to a poll (student)
 router.post("/react-poll/:pollId", userAuth, reactToPoll);
 // router for viewing today's menu

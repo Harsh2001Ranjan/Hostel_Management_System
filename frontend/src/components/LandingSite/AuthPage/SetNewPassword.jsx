@@ -56,17 +56,20 @@ export default function SetNewPassword() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log("Form Data:", data); // Debugging purposes
 
-    // Dispatch the resetPassword action
     dispatch(resetPassword(data))
       .unwrap()
-      .then(() => {
-        // After form submission, navigate to the login page
-        navigate("/login");
+      .then((response) => {
+        if (response.success) {
+          //alert(response.message); // Show success message
+          navigate("/login"); // ✅ Navigate only if success
+        } else {
+          throw new Error(response.message); // Force error handling
+        }
       })
       .catch((err) => {
         console.error("Error resetting password:", err);
+        // alert(err.message || "Failed to reset password"); // Show error message
       });
   };
 

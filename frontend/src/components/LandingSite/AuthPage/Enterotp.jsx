@@ -124,27 +124,22 @@ export default function EnterOTP() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!email.trim()) {
-      console.error("Email is missing");
-      return;
-    }
-
-    // Join the OTP array into a string
     const otpString = otp.join("");
 
-    if (otpString.length !== 6) {
-      console.error("OTP is incomplete. Current OTP:", otpString);
-      return;
-    }
-
-    // Debug: log the payload before sending
-    console.log("Dispatching verifyStudentAccount with:", {
-      email,
-      otp: otpString,
-    });
-
-    // Dispatch the verification thunk with email and otp
-    dispatch(verifyStudentAccount({ email, otp: otpString }));
+    dispatch(verifyStudentAccount({ email, otp: otpString }))
+      .unwrap()
+      .then((response) => {
+        if (response.success) {
+          // alert(response.message); // ✅ Show success message
+          navigate("/login"); // ✅ Navigate only when success is true
+        } else {
+          throw new Error(response.message); // Force error handling
+        }
+      })
+      .catch((err) => {
+        console.error("Error in OTP verification:", err);
+        //alert(err.message || "Verification failed"); // ✅ Show error message
+      });
   };
 
   React.useEffect(() => {
@@ -219,6 +214,12 @@ export default function EnterOTP() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             sx={{ mb: 3 }}
+            InputProps={{
+              sx: {
+                borderRadius: "16px",
+                backgroundColor: theme.palette.background.default,
+              },
+            }}
           />
           {/* OTP Input */}
           <OTP
