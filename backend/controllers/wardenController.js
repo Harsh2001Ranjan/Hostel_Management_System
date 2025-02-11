@@ -254,7 +254,6 @@ export const getMetrics = async (req, res) => {
     const { role, hostelName } = warden; // Extract role & hostel from user data
 
     let totalStudents, onLeaveCount, presentCount;
-
     if (role === "ChiefWarden") {
       // Get metrics for all hostels
       totalStudents = await studentModel.countDocuments();
@@ -304,5 +303,18 @@ export const getMetrics = async (req, res) => {
   } catch (error) {
     console.error("Error fetching metrics:", error);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+// Get all wardens for Chief Warden
+export const getAllWardens = async (req, res) => {
+  try {
+    const wardens = await wardenModel.find({}, "name hostelName");
+
+    if (!wardens || wardens.length === 0) {
+      return res.status(404).json({ message: "No wardens found" });
+    }
+    res.status(200).json(wardens);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

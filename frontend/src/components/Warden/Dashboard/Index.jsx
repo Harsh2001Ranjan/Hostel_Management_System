@@ -4,6 +4,41 @@ import TotalStudents from "./TotalStudents";
 import TimeTemperature from "./TimeTemperature";
 import BarChart from "./BarChart";
 import FoodWastageStats from "./FoodWastageStats";
+// Error Boundary Component
+// class ErrorBoundary extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = { hasError: false };
+//   }
+
+//   static getDerivedStateFromError(error) {
+//     return { hasError: true };
+//   }
+
+//   componentDidCatch(error, info) {
+//     console.error("Error in BarChart:", error, info);
+//   }
+
+//   render() {
+//     if (this.state.hasError) {
+//       return (
+//         <Box
+//           sx={{
+//             padding: 2,
+//             backgroundColor: "#ffebee",
+//             color: "#d32f2f",
+//             borderRadius: "8px",
+//             textAlign: "center",
+//           }}
+//         >
+//           <strong>⚠ Error loading Bar Chart</strong>
+//         </Box>
+//       );
+//     }
+
+//     return this.props.children;
+//   }
+// }
 
 const Dashboard = () => {
   return (
@@ -37,9 +72,12 @@ const Dashboard = () => {
               <TimeTemperature />
             </Box>
 
-            {/* Bar Chart just below Time and Temperature */}
+            {/* Wrap BarChart in ErrorBoundary */}
             <Box sx={{ mb: 2, width: "100%" }}>
               <BarChart />
+              {/* <ErrorBoundary>
+                <BarChart />
+              </ErrorBoundary> */}
             </Box>
           </Box>
         </Grid>

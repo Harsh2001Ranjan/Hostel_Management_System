@@ -53,7 +53,11 @@ export const createLeaveApplication = async (req, res) => {
       addressToGo,
     });
 
-    res.status(201).json({ success: true, data: leaveApplication });
+    res.status(201).json({
+      success: true,
+      message: "Your Leave form submitted successfully",
+      data: leaveApplication,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -204,6 +208,10 @@ export const updateLeaveStatus = async (req, res) => {
         { new: true }
       );
     }
+    return res.status(200).json({
+      success: true,
+      message: `Leave application ${status} successfully`,
+    });
   } catch (error) {
     console.log(error);
     res

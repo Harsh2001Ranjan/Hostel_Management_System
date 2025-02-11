@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
@@ -9,20 +9,42 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { motion, useInView } from "framer-motion"; // Import useInView for viewport animations
+import { motion, useInView } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchHostelAverageRatings } from "../../../redux/features/Dashboard/chiefWarden/barChartSlice"; // Adjust the path as needed
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const BarChart = () => {
   const ref = useRef(null); // Reference for detecting viewport entry
   const isInView = useInView(ref, { once: false, margin: "-50px" });
+  const dispatch = useDispatch();
+
+  // Retrieve ratings data from the Redux slice
+  const { ratings, loading, error } = useSelector((state) => state.ratings);
+
+  // Fetch the average ratings when the component mounts
+  useEffect(() => {
+    dispatch(fetchHostelAverageRatings());
+  }, [dispatch]);
+
+  // Map fetched data to labels and chart data.
+  // If no data is available, use fallback placeholders.
+  const labels =
+    ratings && ratings.length > 0
+      ? ratings.map((item) => item._id)
+      : ["Hostel X", "Hostel B", "Hostel C"];
+  const dataValues =
+    ratings && ratings.length > 0
+      ? ratings.map((item) => Number(item.averageRating.toFixed(2)))
+      : [0, 0, 0];
 
   const data = {
-    labels: ["Hostel A", "Hostel B", "Hostel C"],
+    labels: labels,
     datasets: [
       {
         label: "Average Rating",
-        data: isInView ? [4.5, 4.2, 4.7] : [0, 0, 0], // Reset values when out of view
+        data: isInView ? dataValues : [0, 0, 0], // Reset values when out of view
         backgroundColor: ["#3f51b5", "#f50057", "#4caf50"],
         borderRadius: 10,
         hoverBackgroundColor: ["#303f9f", "#d50057", "#388e3c"],
@@ -110,7 +132,17 @@ const BarChart = () => {
         transition={{ duration: 1, delay: 0.2 }}
         style={{ width: "100%", height: "300px", transformOrigin: "bottom" }}
       >
-        <Bar data={data} options={options} />
+        {loading ? (
+          <Typography variant="h6" align="center">
+            Loading...
+          </Typography>
+        ) : error ? (
+          <Typography variant="h6" align="center" color="error">
+            {error}
+          </Typography>
+        ) : (
+          <Bar data={data} options={options} />
+        )}
       </motion.div>
     </Box>
   );

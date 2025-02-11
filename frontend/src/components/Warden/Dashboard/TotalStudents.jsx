@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMetrics } from "../../../redux/features/Dashboard/wardenDashboardSlice"; // Import Redux action
+import { fetchMetrics } from "../../../redux/features/Dashboard/warden/stu_count"; // Import Redux action
 import {
   Box,
   Typography,
