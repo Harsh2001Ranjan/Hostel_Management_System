@@ -34,6 +34,16 @@ import {
   AddCircle,
   Assignment,
   Person,
+  ///////////////////////
+  ReportProblemOutlined,
+  VisibilityOutlined,
+  EventAvailableOutlined,
+  FreeBreakfastOutlined,
+  RestaurantMenuOutlined,
+  DeleteOutlineOutlined,
+  FeedbackOutlined,
+  PollOutlined,
+  CampaignOutlined,
 } from "@mui/icons-material";
 
 import FlexBetween from "./FlexBetween";
@@ -43,7 +53,7 @@ const navItems = [
   {
     text: "Dashboard",
     route: "dashboard",
-    icon: <HomeOutlined />,
+    icon: <HomeOutlined />, // Home icon for Dashboard
   },
   {
     text: "Complains",
@@ -52,12 +62,12 @@ const navItems = [
   {
     text: "Report Complaint",
     route: "reportcomplaint",
-    icon: <NoteAlt />,
+    icon: <ReportProblemOutlined />, // Represents reporting an issue
   },
   {
     text: "View Complaints",
     route: "viewcomplaint",
-    icon: <TaskAlt />,
+    icon: <VisibilityOutlined />, // Represents viewing complaints
   },
   {
     text: "Leave",
@@ -66,7 +76,7 @@ const navItems = [
   {
     text: "Request Leave",
     route: "leave",
-    icon: <Webhook />,
+    icon: <EventAvailableOutlined />, // Represents leave request (calendar-like)
   },
   {
     text: "Mess",
@@ -75,17 +85,17 @@ const navItems = [
   {
     text: "View Menu",
     route: "viewmenu",
-    icon: <Restaurant />,
+    icon: <RestaurantMenuOutlined />, // Represents food menu
   },
   {
     text: "Food Wastage",
     route: "foodwastage",
-    icon: <NoMeals />,
+    icon: <DeleteOutlineOutlined />, // Represents wastage (trash/delete)
   },
   {
     text: "Feedback",
     route: "feedback",
-    icon: <NoteAdd />,
+    icon: <FeedbackOutlined />, // Represents feedback (chat bubble)
   },
   {
     text: "Poll",
@@ -94,7 +104,7 @@ const navItems = [
   {
     text: "React on Poll",
     route: "poll",
-    icon: <Diversity2 />,
+    icon: <PollOutlined />, // Represents voting/polls
   },
   {
     text: "Notice",
@@ -103,10 +113,9 @@ const navItems = [
   {
     text: "View Notice",
     route: "notices",
-    icon: <Diversity2 />,
+    icon: <CampaignOutlined />, // Represents announcements/notices
   },
 ];
-
 const Sidebar = ({
   drawerWidth,
   isSidebarOpen,

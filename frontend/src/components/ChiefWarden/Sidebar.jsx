@@ -258,6 +258,11 @@ import {
   AddCircle,
   Assignment,
   Person,
+  ReportProblemOutlined,
+  CampaignOutlined,
+  NoteAddOutlined,
+  VisibilityOutlined,
+  PersonAddOutlined,
 } from "@mui/icons-material";
 
 import FlexBetween from "./FlexBetween";
@@ -267,40 +272,39 @@ const navItems = [
   {
     text: "Dashboard",
     route: "chiefdashboard",
-    icon: <HomeOutlined />,
+    icon: <HomeOutlined />, // Home icon for dashboard
   },
   {
     text: "Complaints",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
-    text: "Complaints",
+    text: "Escalated Complaints",
     route: "escalatedcomplaint",
-    icon: <NoteAlt />,
+    icon: <ReportProblemOutlined />, // Warning icon for complaints
   },
-
   {
     text: "Notice",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
     text: "Create Notice",
     route: "createnotice",
-    icon: <FlutterDash />,
+    icon: <NoteAddOutlined />, // Note icon for creating notices
   },
   {
     text: "View Notice",
     route: "chiefnotices",
-    icon: <FlutterDash />,
+    icon: <CampaignOutlined />, // Announcement icon for viewing notices
   },
   {
     text: "Create Warden",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
     text: "Create",
     route: "addwarden",
-    icon: <FlutterDash />,
+    icon: <PersonAddOutlined />, // Person add icon for creating a warden
   },
 ];
 const Sidebar = ({

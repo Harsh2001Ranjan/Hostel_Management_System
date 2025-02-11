@@ -19,7 +19,9 @@ import {
   ListAlt,
   AddCircle,
   Assignment,
-  Person,
+  HowToVote,
+  RestaurantMenu,
+  Feedback,
 } from "@mui/icons-material";
 import FlexBetween from "./FlexBetween";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -28,64 +30,80 @@ const navItems = [
   {
     text: "Dashboard",
     route: "wardendashboard",
-    icon: <HomeOutlined />,
+    icon: <HomeOutlined />, // Home icon for Dashboard
   },
   {
     text: "Leave Applications",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
-    text: "Pending ",
+    text: "Pending",
     route: "leave-applications/pending",
-    icon: <ListAlt />,
+    icon: <ListAlt />, // List icon for Pending Leave Applications
   },
   {
-    text: "Approved ",
+    text: "Approved",
     route: "leave-applications/approved",
-    icon: <Assignment />,
+    icon: <Assignment />, // Assignment icon for Approved Leave Applications
   },
   {
     text: "Complaints",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
     text: "All Complaints",
     route: "complaints",
-    icon: <Summarize />,
+    icon: <Summarize />, // Summarize icon for Complaints
   },
   {
     text: "Notices",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
   {
     text: "Create Notice",
     route: "notices/create",
-    icon: <AddCircle />,
+    icon: <AddCircle />, // Add icon for Creating Notices
   },
   {
     text: "Chief Warden Notices",
     route: "notices/chiefwarden",
-    icon: <ListAlt />,
+    icon: <Summarize />, // Summarize icon for Notices
   },
   {
     text: "Self Notices",
     route: "notices/warden",
-    icon: <ListAlt />,
+    icon: <ListAlt />, // List icon for Warden's Notices
   },
   {
     text: "Mess",
-    icon: null,
+    icon: null, // Section heading (no icon)
   },
-
-  { text: "View Menu", route: "menu/view", icon: <ListAlt /> },
-  { text: "Add Menu", route: "menu/add", icon: <AddCircle /> },
-
-  { text: "Create Poll", route: "polls/create", icon: <AddCircle /> },
-  { text: "My Polls", route: "polls", icon: <ListAlt /> },
-
-  { text: "Current Feedback", route: "feedback/current", icon: <ListAlt /> },
+  {
+    text: "View Menu",
+    route: "menu/view",
+    icon: <RestaurantMenu />, // Restaurant Menu icon for viewing menu
+  },
+  {
+    text: "Add Menu",
+    route: "menu/add",
+    icon: <AddCircle />, // Add icon for adding menu items
+  },
+  {
+    text: "Create Poll",
+    route: "polls/create",
+    icon: <HowToVote />, // Voting icon for creating polls
+  },
+  {
+    text: "My Polls",
+    route: "polls",
+    icon: <ListAlt />, // List icon for user-created polls
+  },
+  {
+    text: "Current Feedback",
+    route: "feedback/current",
+    icon: <Feedback />, // Feedback icon for current feedback section
+  },
 ];
-
 const Sidebar = ({
   drawerWidth,
   isSidebarOpen,
