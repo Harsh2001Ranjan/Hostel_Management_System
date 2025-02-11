@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -14,66 +13,59 @@ import {
   AddCircleOutline as AddIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createPoll,
+  clearSuccessMessage,
+} from "../../../../redux/features/Mess/poll/pollSlice"; // Adjust the path as needed
+import { toast } from "react-toastify";
 
 const PollForm = () => {
-  // State for form inputs
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
-  const [message, setMessage] = useState("");
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token); // Assuming you have an auth slice for managing authentication
+  const { successMessage, error } = useSelector((state) => state.poll);
 
-  // Demo values for userId and hostelName (you can replace these with actual data once connected to backend)
-  const demoUserId = "demoUserId"; // Replace with actual user ID
-  const demoHostelName = "Hostel A"; // Replace with actual hostel name
-
-  // Handle input change for question
   const handleQuestionChange = (e) => setQuestion(e.target.value);
 
-  // Handle input change for options
   const handleOptionChange = (index, e) => {
     const newOptions = [...options];
     newOptions[index] = e.target.value;
     setOptions(newOptions);
   };
 
-  // Add new option input
   const addOption = () => {
     setOptions([...options, ""]);
   };
 
-  // Remove an option input
   const removeOption = (index) => {
     const newOptions = options.filter((_, i) => i !== index);
     setOptions(newOptions);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!question || options.some((option) => !option)) {
-      setMessage("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
       return;
     }
 
-    try {
-      const pollData = {
-        userId: demoUserId,
-        question,
-        options,
-      };
+    dispatch(createPoll({ token, question, options }));
+  };
 
-      const response = await axios.post("/api/poll/create", pollData);
-
-      if (response.status === 201) {
-        setMessage("Poll created successfully!");
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearSuccessMessage());
         setQuestion("");
         setOptions(["", ""]);
-      }
-    } catch (error) {
-      console.error("Error creating poll:", error);
-      setMessage("Error creating poll.");
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
-  };
+  }, [successMessage, dispatch]);
 
   return (
     <Container component="main" maxWidth="sm" sx={{ marginTop: 4 }}>
@@ -82,8 +74,8 @@ const PollForm = () => {
         sx={{
           padding: 4,
           backgroundColor: "#f4f6f9",
-          border: "1px solid #798bb8", // Border around the form
-          borderRadius: "8px", // Rounded corners
+          border: "1px solid #798bb8",
+          borderRadius: "8px",
         }}
       >
         <Typography variant="h5" gutterBottom color="#798bb8" fontWeight="bold">
@@ -139,11 +131,11 @@ const PollForm = () => {
                 fullWidth
                 sx={{
                   marginTop: 2,
-                  border: "2px solid #798bb8", // Clear border with color
-                  color: "#798bb8", // Text color
+                  border: "2px solid #798bb8",
+                  color: "#798bb8",
                   "&:hover": {
-                    backgroundColor: "#798bb8", // Background color on hover
-                    color: "white", // Text color on hover
+                    backgroundColor: "#798bb8",
+                    color: "white",
                   },
                 }}
               >
@@ -161,13 +153,17 @@ const PollForm = () => {
                 Create Poll
               </Button>
             </Grid>
-            {message && (
+            {successMessage && (
               <Grid item xs={12}>
-                <Typography
-                  variant="body2"
-                  color={message.includes("Error") ? "error" : "success"}
-                >
-                  {message}
+                <Typography variant="body2" color="success">
+                  {successMessage}
+                </Typography>
+              </Grid>
+            )}
+            {error && (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="error">
+                  {error}
                 </Typography>
               </Grid>
             )}

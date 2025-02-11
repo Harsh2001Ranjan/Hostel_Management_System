@@ -10,6 +10,8 @@ import feedbackReducer from "./features/Mess/feedbackSlice";
 import mealReducer from "../redux/features/Mess/foodWastageSlice";
 import metricsReducer from "../redux/features/Dashboard/wardenDashboardSlice";
 import chiefMetricsReducer from "../redux/features/Dashboard/chiefWardenDashboardSlice";
+import pollReducer from "./features/Mess/poll/pollSlice";
+import studentpollSlice from "./features/Mess/poll/studentpollSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -24,6 +26,8 @@ const store = configureStore({
     meal: mealReducer,
     metrics: metricsReducer,
     chiefMetrics: chiefMetricsReducer,
+    poll: pollReducer,
+    polls: studentpollSlice,
   },
 });
 

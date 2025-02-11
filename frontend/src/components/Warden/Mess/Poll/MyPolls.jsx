@@ -1,4 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getWardenPolls,
+  deletePoll,
+  getPollResults,
+  clearMessages,
+} from "../../../../redux/features/Mess/poll/pollSlice";
 import {
   Button,
   Card,
@@ -19,6 +26,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { toast } from "react-toastify";
 
 ChartJS.register(
   CategoryScale,
@@ -30,26 +38,24 @@ ChartJS.register(
 );
 
 const WardenPolls = () => {
-  const [polls, setPolls] = useState([
-    {
-      pollId: "1",
-      question: "What is your favorite color?",
-      options: ["Red", "Blue", "Green"],
-      createdAt: "2025-01-01T12:00:00Z",
-    },
-    {
-      pollId: "2",
-      question: "What is your preferred mode of transport?",
-      options: ["Car", "Bike", "Bus"],
-      createdAt: "2025-01-10T14:30:00Z",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { polls, loading, results } = useSelector((state) => state.poll);
+  const token = localStorage.getItem("token");
 
   const [selectedPoll, setSelectedPoll] = useState(null);
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [pollToDelete, setPollToDelete] = useState(null);
+
+  useEffect(() => {
+    dispatch(getWardenPolls({ token }));
+
+    // Clear messages after 3 seconds
+    const timer = setTimeout(() => {
+      dispatch(clearMessages());
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [dispatch, token]);
 
   const handleDeletePoll = (pollId) => {
     setPollToDelete(pollId);
@@ -57,9 +63,10 @@ const WardenPolls = () => {
   };
 
   const confirmDeletePoll = () => {
-    const updatedPolls = polls.filter((poll) => poll.pollId !== pollToDelete);
-    setPolls(updatedPolls);
-    setOpenDeleteDialog(false);
+    dispatch(deletePoll({ token, pollId: pollToDelete })).then(() => {
+      setOpenDeleteDialog(false);
+      setPollToDelete(null);
+    });
   };
 
   const cancelDeletePoll = () => {
@@ -68,28 +75,12 @@ const WardenPolls = () => {
   };
 
   const handleViewResults = (pollId) => {
-    setLoading(true);
-    const poll = polls.find((p) => p.pollId === pollId);
-    if (poll) {
-      const dummyResults = poll.options.reduce((acc, option) => {
-        acc[option] = Math.floor(Math.random() * 10);
-        return acc;
-      }, {});
-      setResults({
-        poll: {
-          question: poll.question,
-          options: poll.options,
-        },
-        results: dummyResults,
-      });
-      setSelectedPoll(pollId);
-    }
-    setLoading(false);
+    dispatch(getPollResults({ token, pollId }));
+    setSelectedPoll(pollId);
   };
 
   const closeModal = () => {
     setSelectedPoll(null);
-    setResults(null);
   };
 
   return (

@@ -3,7 +3,6 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:4000/api";
 
-// ✅ Async thunk for sending OTP
 export const sendOtp = createAsyncThunk(
   "sendOtp",
   async ({ email, role }, { rejectWithValue }) => {
@@ -14,17 +13,16 @@ export const sendOtp = createAsyncThunk(
       } else if (role === "Warden" || role === "ChiefWarden") {
         endpoint = `${BASE_URL}/wardens/send-reset-otp`;
       } else {
-        throw new Error("Invalid role selected");
+        return rejectWithValue({ message: "Invalid role selected" });
       }
 
-      const response = await axios.post(
-        endpoint,
-        { email },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      return response.data; // Expecting a success message from the backend
+      const response = await axios.post(endpoint, { email });
+
+      if (!response.data.success) {
+        return rejectWithValue({ message: response.data.message }); // Ensure failure messages are handled
+      }
+
+      return response.data; // Success message from the backend
     } catch (error) {
       return rejectWithValue(
         error.response?.data || {
@@ -35,7 +33,6 @@ export const sendOtp = createAsyncThunk(
   }
 );
 
-// ✅ Async thunk for student registration
 export const registerStudent = createAsyncThunk(
   "register",
   async (studentData, { rejectWithValue }) => {
@@ -45,7 +42,12 @@ export const registerStudent = createAsyncThunk(
         studentData,
         { headers: { "Content-Type": "application/json" } }
       );
-      return response.data; // Expecting token and student data from backend
+
+      if (!response.data.success) {
+        return rejectWithValue({ message: response.data.message }); // ❌ Ensure error messages are captured
+      }
+
+      return response.data; // ✅ Ensure success messages are returned
     } catch (error) {
       return rejectWithValue(
         error.response?.data || {
@@ -57,6 +59,25 @@ export const registerStudent = createAsyncThunk(
 );
 
 // ✅ Async thunk for student account verification
+// export const verifyStudentAccount = createAsyncThunk(
+//   "enterotp",
+//   async ({ email, otp }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.post(
+//         `${BASE_URL}/students/verify-account`,
+//         { email, otp },
+//         { headers: { "Content-Type": "application/json" } }
+//       );
+//       return response.data; // Expecting a success flag and message from backend
+//     } catch (error) {
+//       return rejectWithValue(
+//         error.response?.data || {
+//           message: "An error occurred during verification",
+//         }
+//       );
+//     }
+//   }
+// );
 export const verifyStudentAccount = createAsyncThunk(
   "enterotp",
   async ({ email, otp }, { rejectWithValue }) => {
@@ -66,7 +87,12 @@ export const verifyStudentAccount = createAsyncThunk(
         { email, otp },
         { headers: { "Content-Type": "application/json" } }
       );
-      return response.data; // Expecting a success flag and message from backend
+
+      if (!response.data.success) {
+        return rejectWithValue({ message: response.data.message }); // ❌ Ensure error messages are captured
+      }
+
+      return response.data; // ✅ Ensure success messages are returned
     } catch (error) {
       return rejectWithValue(
         error.response?.data || {
@@ -136,6 +162,7 @@ export const loginUser = createAsyncThunk(
 );
 
 // ✅ Async thunk for resetting password (Student, Warden, ChiefWarden)
+
 export const resetPassword = createAsyncThunk(
   "setnewpassword",
   async (data, { rejectWithValue }) => {
@@ -151,17 +178,18 @@ export const resetPassword = createAsyncThunk(
         endpoint = `${BASE_URL}/wardens/reset-password`;
         break;
       default:
-        return rejectWithValue("Invalid role");
+        return rejectWithValue({ message: "Invalid role selected" });
     }
 
     try {
       const response = await axios.post(endpoint, rest);
-      return response.data;
+      if (!response.data.success) {
+        return rejectWithValue({ message: response.data.message }); // ❌ Ensure error messages are captured
+      }
+      return response.data; // ✅ Ensure success messages are returned
     } catch (error) {
       return rejectWithValue(
-        error.response?.data || {
-          message: "Failed to reset password",
-        }
+        error.response?.data || { message: "Failed to reset password" }
       );
     }
   }
@@ -201,14 +229,11 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // ✅ Send OTP Reducers
-      .addCase(sendOtp.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
+
       .addCase(sendOtp.fulfilled, (state, action) => {
         state.isLoading = false;
         state.success = true;
+        state.error = null;
       })
       .addCase(sendOtp.rejected, (state, action) => {
         state.isLoading = false;
@@ -229,7 +254,21 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload?.message || "Registration failed";
       })
+
       // ✅ Verification Reducers
+      // .addCase(verifyStudentAccount.pending, (state) => {
+      //   state.verifyLoading = true;
+      //   state.verifyError = null;
+      // })
+      // .addCase(verifyStudentAccount.fulfilled, (state, action) => {
+      //   state.verifyLoading = false;
+      //   state.verifySuccess = action.payload.success;
+      //   state.verifyMessage = action.payload.message;
+      // })
+      // .addCase(verifyStudentAccount.rejected, (state, action) => {
+      //   state.verifyLoading = false;
+      //   state.verifyError = action.payload?.message || "Verification failed";
+      // })
       .addCase(verifyStudentAccount.pending, (state) => {
         state.verifyLoading = true;
         state.verifyError = null;
@@ -243,6 +282,7 @@ const authSlice = createSlice({
         state.verifyLoading = false;
         state.verifyError = action.payload?.message || "Verification failed";
       })
+
       // ✅ Login Reducers
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -258,7 +298,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload?.message || "Login failed";
       })
-      // ✅ Reset Password Reducers
+
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;
         state.error = null;

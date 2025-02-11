@@ -22,54 +22,74 @@ export const registerStudent = async (req, res) => {
     } = req.body;
 
     // Validation for required fields
-    if (!name) return res.status(400).json({ message: "Name is required" });
+    if (!name)
+      return res
+        .status(400)
+        .json({ success: false, message: "Name is required" });
     if (!registrationNumber)
       return res
         .status(400)
-        .json({ message: "Registration number is required" });
+        .json({ success: false, message: "Registration number is required" });
     if (!hostelName)
-      return res.status(400).json({ message: "Hostel name is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Hostel name is required" });
     if (!roomNumber)
-      return res.status(400).json({ message: "Room number is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Room number is required" });
     if (!phoneNumber)
-      return res.status(400).json({ message: "Phone number is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Phone number is required" });
     if (!parentsPhoneNumber)
       return res
         .status(400)
-        .json({ message: "Parent's phone number is required" });
+        .json({ success: false, message: "Parent's phone number is required" });
     if (!address || !address.state || !address.district)
-      return res
-        .status(400)
-        .json({ message: "Address with state and district is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Address with state and district is required",
+      });
     if (!password)
-      return res.status(400).json({ message: "Password is required" });
-    if (!repeatPassword)
-      return res.status(400).json({ message: "Repeat password is required" });
-    if (!email) return res.status(400).json({ message: "Email is required" });
-    if (!parentEmail)
-      return res.status(400).json({ message: "Parent's Email is required" });
-    if (!currentYear)
-      return res.status(400).json({ message: "Current year is required" });
-
-    // Validate password and repeatPassword match
-    if (password !== repeatPassword) {
       return res
         .status(400)
-        .json({ message: "Password and repeat password do not match" });
+        .json({ success: false, message: "Password is required" });
+    if (!repeatPassword)
+      return res
+        .status(400)
+        .json({ success: false, message: "Repeat password is required" });
+    if (!email)
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
+    if (!parentEmail)
+      return res
+        .status(400)
+        .json({ success: false, message: "Parent's Email is required" });
+    if (!currentYear)
+      return res
+        .status(400)
+        .json({ success: false, message: "Current year is required" });
+
+    if (password !== repeatPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Password and repeat password do not match",
+      });
     }
 
-    // Check if student with the same registration number or email already exists
     const existingStudent = await studentModel.findOne({
       $or: [{ registrationNumber }, { email }],
     });
 
     if (existingStudent) {
       return res.status(400).json({
+        success: false,
         message:
           "Student with this registration number or email already exists",
       });
     }
-
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -94,7 +114,7 @@ export const registerStudent = async (req, res) => {
     // Generate OTP for verification
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     newStudent.verifyOtp = otp;
-    newStudent.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiration time
+    //newStudent.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiration time
     await newStudent.save();
 
     // Send verification OTP to the student's email
@@ -177,12 +197,6 @@ export const loginStudent = async (req, res) => {
       //message: "Login successful",
       token, // Send the JWT token
       student, // Send the student data (or user data based on your application)
-      // student: {
-      //   id: student._id,
-      //   name: student.name,
-      //   email: student.email,
-      //   registrationNumber: student.registrationNumber,
-      // },
       success: true,
     });
   } catch (error) {
